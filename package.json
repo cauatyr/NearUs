@@ -1,0 +1,28 @@
+{
+  "name": "nearus",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NearUs — Plataforma de descubrimiento y reserva de servicios locales en Cuenca, Ecuador",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "date-fns": "3.6.0",
+    "leaflet": "1.9.4",
+    "lucide-react": "0.453.0",
+    "next": "^14.2.34",
+    "qrcode.react": "4.0.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-leaflet": "4.2.1",
+    "zustand": "4.5.5"
+  },
+  "devDependencies": {
+    "autoprefixer": "10.4.20",
+    "postcss": "8.4.47",
+    "tailwindcss": "3.4.13"
+  }
+}
