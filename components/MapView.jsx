@@ -4,20 +4,10 @@ import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { CIUDAD } from '@/lib/data/negocios'
 import { CATEGORIAS } from '@/lib/data/categorias'
+import { logoPlaceholder } from '@/lib/utils'
 
 function categoriaInfo(catId) {
   return CATEGORIAS.find((c) => c.id === catId) || { color: '#2BACE2', nombre: '' }
-}
-
-const EMOJIS = {
-  cabello: '✂️',
-  barberia: '✂️',
-  unas: '💅',
-  estetica: '✨',
-  spa: '🌸',
-  depilacion: '💎',
-  maquillaje: '💄',
-  masajes: '💆'
 }
 
 function iconoNegocio(negocio, opciones = {}) {
@@ -38,7 +28,7 @@ function iconoNegocio(negocio, opciones = {}) {
 
   const halo = `box-shadow: 0 0 0 ${haloSize}px ${haloColor}, 0 10px 20px rgba(0,0,0,0.3);`
   const ringColor = destacado ? '#F59E0B' : 'white'
-  const ringWidth = destacado ? 5 : 4
+  const ringWidth = destacado ? 3 : 2
 
   const coronaHTML = destacado
     ? `
@@ -99,11 +89,10 @@ function iconoNegocio(negocio, opciones = {}) {
           background:${cat.color};
           border:${ringWidth}px solid ${ringColor};
           ${halo}
-          display:grid;place-items:center;
-          font-size:${activo ? 28 : 22}px;
+          overflow:hidden;
           transition:all 0.2s;
         ">
-          ${EMOJIS[negocio.categoria] || '•'}
+          <img src="${negocio.logo || logoPlaceholder(negocio.nombre, cat.color)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" />
         </div>
         ${ahoraHTML}
       </div>

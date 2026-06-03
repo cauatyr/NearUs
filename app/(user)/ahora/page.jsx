@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Zap, MapPin, Clock, Star, ArrowRight, Check } from 'lucide-react'
-import { NEGOCIOS, serviciosDeNegocio } from '@/lib/data/negocios'
+import { useNegocios, serviciosDeNegocio } from '@/lib/data/negocios'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { useReservas, useUbicacion } from '@/lib/store'
 import { distanciaKm, formatoDistancia, formatoUSD, generarHorarios } from '@/lib/utils'
@@ -13,6 +13,7 @@ export default function AhoraPage() {
   const router = useRouter()
   const { posicion } = useUbicacion()
   const { crearReserva } = useReservas()
+  const NEGOCIOS = useNegocios()
   const [categoria, setCategoria] = useState('barberia')
   const [estado, setEstado] = useState('inicial')
   const [negocioElegido, setNegocioElegido] = useState(null)

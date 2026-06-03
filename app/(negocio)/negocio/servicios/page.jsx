@@ -2,12 +2,13 @@
 import { useState } from 'react'
 import { Plus, Edit3, Trash2, Clock, X, Check } from 'lucide-react'
 import { serviciosDeNegocio } from '@/lib/data/negocios'
-import { NEGOCIO_DEMO_ID } from '@/lib/data/demo-negocio'
+import { useSesion } from '@/lib/store-sesion'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { formatoUSD, formatoDuracion } from '@/lib/utils'
 
 export default function ServiciosPage() {
-  const [servicios, setServicios] = useState(serviciosDeNegocio(NEGOCIO_DEMO_ID))
+  const negocioId = useSesion((s) => s.negocioId)
+  const [servicios, setServicios] = useState(serviciosDeNegocio(negocioId))
   const [editando, setEditando] = useState(null)
 
   const eliminar = (id) => {

@@ -1,7 +1,8 @@
 'use client'
 import { useState, useMemo } from 'react'
-import { TrendingUp, Users, Calendar, DollarSign, Star, Clock } from 'lucide-react'
-import { RESERVAS_DEMO, obtenerServicioDemo, obtenerEmpleadoDemo } from '@/lib/data/demo-negocio'
+import { TrendingUp, Users, Calendar, DollarSign, Star, Clock, Wallet, ArrowDownToLine, Info } from 'lucide-react'
+import { useReservasDemo, obtenerServicioDemo, obtenerEmpleadoDemo } from '@/lib/data/demo-negocio'
+import { useSesion } from '@/lib/store-sesion'
 import { formatoUSD } from '@/lib/utils'
 
 const PERIODOS = [
@@ -10,7 +11,14 @@ const PERIODOS = [
   { id: '90d', label: 'Últimos 90 días' }
 ]
 
+// Comisión que NearUs descontará de cada servicio cobrado por la plataforma.
+// MVP: 10%. Al lanzamiento se ajustará — cambiar acá si cambia.
+const COMISION_NEARUS = 0.10
+
 export default function ReportesPage() {
+  const negocioId = useSesion((s) => s.negocioId)
+  const todas = useReservasDemo()
+  const RESERVAS_DEMO = todas.filter((r) => r.negocioId === negocioId)
   const [periodo, setPeriodo] = useState('7d')
 
   const stats = useMemo(() => {
@@ -51,16 +59,26 @@ export default function ReportesPage() {
       porDia[new Date(r.fecha).getDay()] += 1
     })
 
+    // Sólo cobramos en reservas pagadas en la app (no en local)
+    const cobradoEnApp = completadas
+      .filter((r) => r.metodoPago === 'inapp')
+      .reduce((s, r) => s + r.precio, 0)
+    const comision = cobradoEnApp * COMISION_NEARUS
+    const saldoRetirar = cobradoEnApp - comision
+
     return {
       total: completadas.length,
       ingresos,
       clientesUnicos,
       ticketPromedio: completadas.length ? ingresos / completadas.length : 0,
+      cobradoEnApp,
+      comision,
+      saldoRetirar,
       topServicios,
       porEmpleado,
       porDia
     }
-  }, [periodo])
+  }, [periodo, RESERVAS_DEMO])
 
   const maxDia = Math.max(...stats.porDia, 1)
 
@@ -86,8 +104,15 @@ export default function ReportesPage() {
         </div>
       </div>
 
+      {/* Saldo para retirar */}
+      <SaldoRetirar
+        saldo={stats.saldoRetirar}
+        bruto={stats.cobradoEnApp}
+        comision={stats.comision}
+      />
+
       {/* KPIs */}
-      <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KPI
           icono={DollarSign}
           color="acento"
@@ -225,6 +250,106 @@ function KPI({ icono: Icono, color, label, valor, delta }) {
       <div className="mt-3 text-2xl font-semibold text-zinc-900">{valor}</div>
       <div className="text-xs text-zinc-500 mt-0.5">{label}</div>
       <div className="text-[10px] text-acento-600 font-medium mt-2">{delta}</div>
+    </div>
+  )
+}
+
+function SaldoRetirar({ saldo, bruto, comision }) {
+  const [modalAbierto, setModalAbierto] = useState(false)
+  const puedeRetirar = saldo > 0
+  const porcentaje = Math.round(COMISION_NEARUS * 100)
+
+  return (
+    <>
+      <div className="mt-6 bg-gradient-to-br from-acento-600 via-acento-500 to-marca-600 text-white rounded-3xl p-5 sm:p-6 shadow-flotante relative overflow-hidden">
+        <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -left-10 -bottom-16 w-48 h-48 bg-amber-300/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative grid md:grid-cols-[1fr_auto] gap-5 items-start">
+          <div>
+            <div className="flex items-center gap-2 text-emerald-100 text-[10px] uppercase tracking-wider font-bold">
+              <Wallet className="w-3.5 h-3.5" /> Disponible para retirar
+            </div>
+            <div className="mt-1.5 text-4xl sm:text-5xl font-bold leading-tight">
+              {formatoUSD(saldo)}
+            </div>
+            <div className="mt-2 text-xs text-emerald-50/90">
+              Pagos cobrados por NearUs en este período, ya descontada la comisión.
+            </div>
+
+            <div className="mt-4 grid grid-cols-3 gap-2 max-w-lg">
+              <Bloque label="Cobrado en app" valor={formatoUSD(bruto)} />
+              <Bloque label={`Comisión NearUs ${porcentaje}%`} valor={`− ${formatoUSD(comision)}`} negativo />
+              <Bloque label="Tu saldo" valor={formatoUSD(saldo)} destacado />
+            </div>
+          </div>
+
+          <button
+            onClick={() => setModalAbierto(true)}
+            disabled={!puedeRetirar}
+            className="bg-white text-acento-700 hover:bg-emerald-50 disabled:bg-white/40 disabled:text-white/70 disabled:cursor-not-allowed font-bold rounded-full px-5 py-3 flex items-center gap-2 shadow-md transition w-full md:w-auto justify-center"
+          >
+            <ArrowDownToLine className="w-4 h-4" />
+            Solicitar retiro
+          </button>
+        </div>
+
+        <div className="relative mt-4 flex items-start gap-2 bg-black/15 rounded-xl px-3 py-2.5 text-[11px] text-emerald-50/90">
+          <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <span>
+            Comisión actual durante el MVP: <strong>{porcentaje}%</strong> sólo sobre pagos hechos
+            en la app. Los pagos en local no descuentan comisión. El porcentaje se ajustará
+            cuando NearUs salga oficialmente.
+          </span>
+        </div>
+      </div>
+
+      {modalAbierto && <ModalRetiro saldo={saldo} onCerrar={() => setModalAbierto(false)} />}
+    </>
+  )
+}
+
+function Bloque({ label, valor, negativo, destacado }) {
+  return (
+    <div
+      className={`rounded-xl p-2.5 ${
+        destacado ? 'bg-white text-acento-700' : 'bg-white/10 text-white'
+      }`}
+    >
+      <div className={`text-[9px] uppercase tracking-wider font-bold ${destacado ? 'text-acento-600' : 'text-emerald-100/80'}`}>
+        {label}
+      </div>
+      <div className={`mt-0.5 font-bold text-sm sm:text-base ${negativo ? 'text-amber-200' : ''}`}>
+        {valor}
+      </div>
+    </div>
+  )
+}
+
+function ModalRetiro({ saldo, onCerrar }) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-3" onClick={onCerrar}>
+      <div
+        className="bg-white w-full max-w-md rounded-3xl shadow-flotante overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 text-center">
+          <div className="w-14 h-14 mx-auto bg-acento-500 rounded-2xl grid place-items-center">
+            <ArrowDownToLine className="w-7 h-7 text-white" />
+          </div>
+          <h3 className="mt-4 text-xl font-semibold text-zinc-900">Retiros próximamente</h3>
+          <p className="mt-2 text-sm text-zinc-600">
+            Vamos a habilitar el retiro a tu cuenta bancaria cuando NearUs salga oficialmente.
+            Tu saldo actual disponible es de <strong>{formatoUSD(saldo)}</strong>.
+          </p>
+          <button
+            onClick={onCerrar}
+            className="mt-5 w-full bg-marca-500 hover:bg-marca-600 text-white font-semibold py-3 rounded-full"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

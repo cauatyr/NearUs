@@ -1,36 +1,93 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Check, Store, MapPin, Phone, User, Mail, Sparkles } from 'lucide-react'
+import dynamic from 'next/dynamic'
+import { ArrowLeft, Check, Store, MapPin, Phone, User, Mail, Lock, Sparkles, AlertCircle, ImagePlus, X } from 'lucide-react'
 import { CATEGORIAS } from '@/lib/data/categorias'
+import { useDatosStore } from '@/lib/store-datos'
+import { CIUDAD } from '@/lib/data/negocios'
+import { comprimirImagen } from '@/lib/utils'
 import Logo from '@/components/Logo'
+
+const MapaPin = dynamic(() => import('@/components/MapaPin'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-64 w-full rounded-2xl bg-zinc-100 grid place-items-center text-zinc-400 text-sm">
+      Cargando mapa…
+    </div>
+  )
+})
 
 const PASOS = ['Tu negocio', 'Ubicación', 'Contacto', 'Listo']
 
 export default function OnboardingPage() {
+  const agregarNegocio = useDatosStore((s) => s.agregarNegocio)
   const [paso, setPaso] = useState(0)
   const [datos, setDatos] = useState({
     nombre: '',
     categoria: '',
     descripcion: '',
+    logo: null,
     direccion: '',
     barrio: '',
+    lat: CIUDAD.centro.lat,
+    lng: CIUDAD.centro.lng,
     telefono: '',
     email: '',
+    password: '',
     responsable: ''
   })
+  const [estado, setEstado] = useState('idle') // 'idle' | 'creando' | 'creado' | 'error'
+  const [errorMsg, setErrorMsg] = useState(null)
+  const [idCreado, setIdCreado] = useState(null)
+  const [ubicacionTocada, setUbicacionTocada] = useState(false)
 
   const actualizar = (campo, valor) => setDatos((d) => ({ ...d, [campo]: valor }))
+  const actualizarUbicacion = (lat, lng) => {
+    setDatos((d) => ({ ...d, lat, lng }))
+    setUbicacionTocada(true)
+  }
 
   const puedeAvanzar = () => {
-    if (paso === 0) return datos.nombre && datos.categoria && datos.descripcion
-    if (paso === 1) return datos.direccion && datos.barrio
-    if (paso === 2) return datos.telefono && datos.email && datos.responsable
+    if (paso === 0) return datos.nombre && datos.categoria && datos.descripcion && datos.logo
+    if (paso === 1) return datos.direccion && datos.barrio && ubicacionTocada
+    if (paso === 2) return datos.telefono && datos.email && datos.responsable && datos.password && datos.password.length >= 6
     return false
   }
 
-  const siguiente = () => {
+  const siguiente = async () => {
+    // Si pasamos del paso 2 al 3, disparamos el insert
+    if (paso === 2) {
+      setPaso(3)
+      await crearNegocio()
+      return
+    }
     if (paso < PASOS.length - 1) setPaso(paso + 1)
+  }
+
+  const crearNegocio = async () => {
+    setEstado('creando')
+    setErrorMsg(null)
+    const { id, error } = await agregarNegocio({
+      nombre: datos.nombre,
+      categoria: datos.categoria,
+      descripcion: datos.descripcion,
+      direccion: datos.direccion,
+      barrio: datos.barrio,
+      telefono: datos.telefono,
+      lat: datos.lat,
+      lng: datos.lng,
+      logo: datos.logo,
+      email: datos.email,
+      password: datos.password
+    })
+    if (error) {
+      setEstado('error')
+      setErrorMsg(error)
+    } else {
+      setEstado('creado')
+      setIdCreado(id)
+    }
   }
 
   return (
@@ -68,12 +125,25 @@ export default function OnboardingPage() {
 
         {/* Steps */}
         <div className="bg-white rounded-3xl border border-zinc-100 p-6 sm:p-10 shadow-suave">
-          {paso === 0 && (
-            <PasoNegocio datos={datos} actualizar={actualizar} />
+          {paso === 0 && <PasoNegocio datos={datos} actualizar={actualizar} />}
+          {paso === 1 && (
+            <PasoUbicacion
+              datos={datos}
+              actualizar={actualizar}
+              actualizarUbicacion={actualizarUbicacion}
+              ubicacionTocada={ubicacionTocada}
+            />
           )}
-          {paso === 1 && <PasoUbicacion datos={datos} actualizar={actualizar} />}
           {paso === 2 && <PasoContacto datos={datos} actualizar={actualizar} />}
-          {paso === 3 && <PasoListo datos={datos} />}
+          {paso === 3 && (
+            <PasoListo
+              datos={datos}
+              estado={estado}
+              errorMsg={errorMsg}
+              idCreado={idCreado}
+              reintentar={crearNegocio}
+            />
+          )}
 
           {paso < PASOS.length - 1 && (
             <div className="mt-8 flex items-center justify-between">
@@ -92,7 +162,7 @@ export default function OnboardingPage() {
                 disabled={!puedeAvanzar()}
                 className="bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white font-medium px-6 py-3 rounded-full transition"
               >
-                Continuar
+                {paso === 2 ? 'Crear negocio' : 'Continuar'}
               </button>
             </div>
           )}
@@ -148,12 +218,102 @@ function PasoNegocio({ datos, actualizar }) {
           onChange={(v) => actualizar('descripcion', v)}
           textarea
         />
+        <CampoLogo valor={datos.logo} onChange={(v) => actualizar('logo', v)} />
       </div>
     </div>
   )
 }
 
-function PasoUbicacion({ datos, actualizar }) {
+function CampoLogo({ valor, onChange }) {
+  const [error, setError] = useState(null)
+  const [procesando, setProcesando] = useState(false)
+
+  const handleArchivo = async (file) => {
+    setError(null)
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setError('Solo se permiten imágenes (jpg, png, webp).')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La imagen es muy grande. Máximo 5 MB.')
+      return
+    }
+    setProcesando(true)
+    try {
+      const dataUrl = await comprimirImagen(file, 256)
+      onChange(dataUrl)
+    } catch (e) {
+      setError('No se pudo procesar la imagen.')
+    } finally {
+      setProcesando(false)
+    }
+  }
+
+  return (
+    <div>
+      <label className="text-sm font-medium text-zinc-700">
+        Logo del negocio <span className="text-red-500">*</span>
+      </label>
+      <p className="text-xs text-zinc-500 mt-0.5">
+        Esta imagen aparecerá como el pin de tu negocio en el mapa.
+      </p>
+
+      {valor ? (
+        <div className="mt-2 flex items-center gap-4 bg-zinc-50 border border-zinc-200 rounded-2xl p-3">
+          <img
+            src={valor}
+            alt="Logo del negocio"
+            className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow"
+          />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-zinc-900">Logo listo</div>
+            <div className="text-xs text-zinc-500 mt-0.5">256 × 256 px · jpeg comprimido</div>
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              className="mt-2 text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
+            >
+              <X className="w-3 h-3" /> Quitar y subir otro
+            </button>
+          </div>
+        </div>
+      ) : (
+        <label
+          className={`mt-2 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-2xl py-8 px-4 cursor-pointer transition ${
+            procesando
+              ? 'border-marca-300 bg-marca-50'
+              : 'border-zinc-300 hover:border-marca-500 hover:bg-marca-50'
+          }`}
+        >
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            disabled={procesando}
+            onChange={(e) => handleArchivo(e.target.files?.[0])}
+          />
+          {procesando ? (
+            <>
+              <div className="w-8 h-8 border-2 border-marca-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm text-marca-700 font-medium">Procesando imagen…</span>
+            </>
+          ) : (
+            <>
+              <ImagePlus className="w-8 h-8 text-zinc-400" />
+              <span className="text-sm font-medium text-zinc-700">Sube el logo</span>
+              <span className="text-xs text-zinc-500">JPG, PNG o WEBP · máx. 5 MB</span>
+            </>
+          )}
+        </label>
+      )}
+
+      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+    </div>
+  )
+}
+
+function PasoUbicacion({ datos, actualizar, actualizarUbicacion, ubicacionTocada }) {
   return (
     <div>
       <div className="flex items-center gap-2 text-marca-500 mb-2">
@@ -176,6 +336,24 @@ function PasoUbicacion({ datos, actualizar }) {
           valor={datos.barrio}
           onChange={(v) => actualizar('barrio', v)}
         />
+
+        <div>
+          <label className="text-sm font-medium text-zinc-700">Marca tu ubicación exacta</label>
+          <div className="mt-2">
+            <MapaPin lat={datos.lat} lng={datos.lng} onCambio={actualizarUbicacion} />
+          </div>
+          {!ubicacionTocada && (
+            <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+              Confirma la ubicación tocando el mapa o arrastrando el pin.
+            </p>
+          )}
+          {ubicacionTocada && (
+            <p className="mt-2 text-xs text-acento-600 bg-acento-50 border border-acento-100 rounded-lg px-3 py-2">
+              Ubicación lista: {datos.lat.toFixed(5)}, {datos.lng.toFixed(5)}
+            </p>
+          )}
+        </div>
+
         <div className="bg-marca-50 border border-marca-100 rounded-2xl p-4 text-sm text-marca-700">
           <p className="font-medium">Cuenca · Ecuador</p>
           <p className="text-marca-600 mt-1 text-xs">
@@ -221,12 +399,52 @@ function PasoContacto({ datos, actualizar }) {
           icono={Mail}
           type="email"
         />
+        <Campo
+          etiqueta="Contraseña para acceder al panel"
+          placeholder="Mínimo 6 caracteres"
+          valor={datos.password}
+          onChange={(v) => actualizar('password', v)}
+          icono={Lock}
+          type="password"
+        />
+        <p className="text-xs text-zinc-500 -mt-2">
+          Con este email y contraseña vas a entrar al panel de tu negocio en NearUs.
+        </p>
       </div>
     </div>
   )
 }
 
-function PasoListo({ datos }) {
+function PasoListo({ datos, estado, errorMsg, idCreado, reintentar }) {
+  if (estado === 'creando') {
+    return (
+      <div className="text-center py-10">
+        <div className="w-12 h-12 mx-auto border-4 border-zinc-200 border-t-marca-500 rounded-full animate-spin" />
+        <h2 className="mt-6 text-xl font-semibold text-zinc-900">Creando tu negocio…</h2>
+        <p className="text-zinc-500 mt-2 text-sm">Estamos publicando <strong>{datos.nombre}</strong> en el mapa.</p>
+      </div>
+    )
+  }
+
+  if (estado === 'error') {
+    return (
+      <div className="text-center py-6">
+        <div className="w-16 h-16 mx-auto bg-red-100 rounded-full grid place-items-center">
+          <AlertCircle className="w-8 h-8 text-red-600" strokeWidth={2.5} />
+        </div>
+        <h2 className="mt-5 text-2xl font-semibold text-zinc-900">No pudimos crear el negocio</h2>
+        <p className="text-zinc-600 mt-2 max-w-md mx-auto text-sm">{errorMsg}</p>
+        <button
+          onClick={reintentar}
+          className="mt-5 bg-marca-500 hover:bg-marca-600 text-white font-semibold px-6 py-3 rounded-full"
+        >
+          Reintentar
+        </button>
+      </div>
+    )
+  }
+
+  // estado === 'creado'
   return (
     <div className="text-center py-6">
       <div className="w-16 h-16 mx-auto bg-acento-500 rounded-full grid place-items-center">
@@ -234,29 +452,35 @@ function PasoListo({ datos }) {
       </div>
       <h2 className="mt-5 text-2xl font-semibold text-zinc-900">¡Bienvenido a NearUs!</h2>
       <p className="text-zinc-600 mt-2 max-w-md mx-auto">
-        Hemos recibido el registro de <strong>{datos.nombre}</strong>. Te llamaremos en máximo 24 horas
-        al <strong>{datos.telefono}</strong> para activar tu panel.
+        <strong>{datos.nombre}</strong> ya está publicado en el mapa de Cuenca. Tus futuros clientes
+        ya pueden encontrarte.
       </p>
 
       <div className="mt-6 bg-marca-50 border border-marca-100 rounded-2xl p-5 text-left max-w-md mx-auto">
         <div className="flex items-center gap-2 text-marca-700 font-medium text-sm">
           <Sparkles className="w-4 h-4" />
-          Mientras tanto, puedes explorar
+          Próximos pasos
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Link
-            href="/negocio/agenda"
-            className="bg-white border border-marca-100 rounded-xl px-4 py-3 text-sm font-medium text-marca-600 hover:bg-marca-50 text-center"
+            href={`/explorar?focus=${idCreado}`}
+            className="bg-marca-500 text-white rounded-xl px-4 py-3 text-sm font-semibold hover:bg-marca-600 text-center"
           >
-            Ver panel demo
+            Ver en el mapa
           </Link>
           <Link
-            href="/explorar"
+            href={`/explorar/${idCreado}`}
             className="bg-white border border-marca-100 rounded-xl px-4 py-3 text-sm font-medium text-marca-600 hover:bg-marca-50 text-center"
           >
-            App del usuario
+            Ver mi negocio
           </Link>
         </div>
+        <Link
+          href="/negocio/agenda"
+          className="mt-2 block bg-white border border-marca-100 rounded-xl px-4 py-3 text-sm font-medium text-marca-600 hover:bg-marca-50 text-center"
+        >
+          Ir al panel demo
+        </Link>
       </div>
     </div>
   )

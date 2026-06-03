@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Calendar, Heart, Star, ChevronRight, Settings, LogOut, Award } from 'lucide-react'
 import { useReservas } from '@/lib/store'
-import { obtenerNegocio, obtenerServicio, NEGOCIOS } from '@/lib/data/negocios'
+import { obtenerNegocio, obtenerServicio, useNegocios } from '@/lib/data/negocios'
 import { formatoUSD, mesCorto, diasSemanaCorto } from '@/lib/utils'
 import TarjetaNegocio from '@/components/TarjetaNegocio'
 import { useUbicacion } from '@/lib/store'
@@ -12,6 +12,7 @@ export default function PerfilPage() {
   const [tab, setTab] = useState('reservas')
   const { reservas, favoritos } = useReservas()
   const { posicion } = useUbicacion()
+  const NEGOCIOS = useNegocios()
 
   const activas = reservas.filter((r) => r.estado === 'confirmada')
   const pasadas = reservas.filter((r) => r.estado !== 'confirmada')

@@ -4,11 +4,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Calendar, Scissors, Users, QrCode, BarChart3, Sparkles,
-  Settings, ChevronRight, Menu, X
+  Settings, ChevronRight, Menu, X, LogOut
 } from 'lucide-react'
-import { obtenerNegocio } from '@/lib/data/negocios'
-import { NEGOCIO_DEMO_ID } from '@/lib/data/demo-negocio'
+import { useNegocios } from '@/lib/data/negocios'
+import { useSesion } from '@/lib/store-sesion'
 import Logo from '@/components/Logo'
+import { useRouter } from 'next/navigation'
 
 const SECCIONES = [
   { href: '/negocio/agenda', icono: Calendar, label: 'Agenda', desc: 'Reservas del día' },
@@ -16,14 +17,25 @@ const SECCIONES = [
   { href: '/negocio/empleados', icono: Users, label: 'Equipo', desc: 'Profesionales' },
   { href: '/negocio/validar', icono: QrCode, label: 'Check-in', desc: 'Validar QR' },
   { href: '/negocio/reportes', icono: BarChart3, label: 'Reportes', desc: 'Métricas' },
-  { href: '/negocio/promocion', icono: Sparkles, label: 'Promoción', desc: 'Plan Pro y destaques', destacado: true }
+  { href: '/negocio/promocion', icono: Sparkles, label: 'Promoción', desc: 'Plan Pro y destaques', destacado: true },
+  { href: '/negocio/configuracion', icono: Settings, label: 'Configuración', desc: 'Foto, contacto y horario' }
 ]
 
 export default function SidebarNegocio() {
   const pathname = usePathname()
+  const router = useRouter()
   const [abierto, setAbierto] = useState(false)
-  const negocio = obtenerNegocio(NEGOCIO_DEMO_ID)
+  const negocioId = useSesion((s) => s.negocioId)
+  const modoDemo = useSesion((s) => s.modoDemo)
+  const cerrarSesion = useSesion((s) => s.cerrarSesion)
+  const negocios = useNegocios()
+  const negocio = negocios.find((n) => n.id === negocioId)
   const seccionActual = SECCIONES.find((s) => pathname?.startsWith(s.href))
+
+  const salir = async () => {
+    await cerrarSesion()
+    router.replace('/login')
+  }
 
   // Cerrar drawer al cambiar de ruta
   useEffect(() => {
@@ -107,8 +119,15 @@ export default function SidebarNegocio() {
         {/* Negocio actual */}
         <div className="p-4 border-b border-zinc-100">
           <div className="bg-black text-white rounded-2xl p-3">
-            <div className="text-[10px] uppercase tracking-wider text-marca-500 font-bold">
-              Negocio
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[10px] uppercase tracking-wider text-marca-500 font-bold">
+                Negocio
+              </div>
+              {modoDemo && (
+                <span className="text-[9px] uppercase tracking-wider font-bold bg-amber-400 text-amber-900 px-1.5 py-0.5 rounded-full">
+                  Demo
+                </span>
+              )}
             </div>
             <div className="mt-0.5 font-bold text-sm">{negocio?.nombre}</div>
             <div className="mt-1 text-xs text-zinc-300">{negocio?.barrio} · Cuenca</div>
@@ -160,9 +179,19 @@ export default function SidebarNegocio() {
         </nav>
 
         <div className="p-3 border-t border-zinc-100">
-          <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 text-zinc-700">
-            <Settings className="w-5 h-5 text-zinc-500" />
-            <span className="font-bold text-sm">Configuración</span>
+          <button
+            onClick={salir}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 text-zinc-700"
+          >
+            <LogOut className="w-5 h-5 text-zinc-500" />
+            <div className="flex-1 min-w-0 text-left">
+              <div className="font-bold text-sm text-black">
+                {modoDemo ? 'Salir del demo' : 'Cerrar sesión'}
+              </div>
+              <div className="text-[11px] text-zinc-500">
+                {modoDemo ? 'Cambiar de negocio o entrar real' : 'Volver al login'}
+              </div>
+            </div>
           </button>
         </div>
       </aside>

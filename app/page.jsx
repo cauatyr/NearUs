@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MapPin, Clock, QrCode, Zap, Star, Calendar, Smartphone, Sparkles, ArrowRight } from 'lucide-react'
+import { MapPin, Clock, QrCode, Zap, Star, Calendar, Smartphone, Sparkles, ArrowRight, LogIn } from 'lucide-react'
 import Logo from '@/components/Logo'
 
 export default function LandingPage() {
@@ -10,8 +10,14 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           <Logo size="md" />
           <nav className="flex items-center gap-2 sm:gap-4">
-            <Link href="/onboarding" className="hidden sm:inline text-sm font-medium text-zinc-700 hover:text-marca-600">
+            <Link href="/onboarding" className="hidden md:inline text-sm font-medium text-zinc-700 hover:text-marca-600">
               ¿Tienes un negocio?
+            </Link>
+            <Link
+              href="/login"
+              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-marca-600 hover:text-marca-700 border border-marca-200 hover:bg-marca-50 rounded-full px-4 py-2 transition"
+            >
+              <LogIn className="w-4 h-4" /> Acceder a mi empresa
             </Link>
             <Link
               href="/explorar"
@@ -174,12 +180,23 @@ export default function LandingPage() {
             Únete a los 20 primeros negocios. Plan básico gratuito durante todo el MVP.
             Sin compromiso, sin tarjeta.
           </p>
-          <Link
-            href="/onboarding"
-            className="mt-7 inline-flex items-center gap-2 bg-marca-500 hover:bg-marca-400 text-white font-bold px-7 py-3.5 rounded-full transition shadow-marca"
-          >
-            Registrar mi negocio gratis <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="mt-7 flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <Link
+              href="/onboarding"
+              className="inline-flex items-center gap-2 bg-marca-500 hover:bg-marca-400 text-white font-bold px-7 py-3.5 rounded-full transition shadow-marca"
+            >
+              Registrar mi negocio gratis <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold px-7 py-3.5 rounded-full transition backdrop-blur"
+            >
+              <LogIn className="w-4 h-4" /> Ya tengo cuenta · Acceder
+            </Link>
+          </div>
+          <p className="mt-4 text-xs text-zinc-400">
+            ¿Ya registraste tu negocio? Entra al panel con tu email y contraseña.
+          </p>
         </div>
       </section>
 
@@ -193,7 +210,7 @@ export default function LandingPage() {
           <div className="flex gap-5">
             <Link href="/explorar" className="hover:text-black font-medium">App</Link>
             <Link href="/onboarding" className="hover:text-black font-medium">Negocios</Link>
-            <Link href="/negocio/agenda" className="hover:text-black font-medium">Panel</Link>
+            <Link href="/login" className="hover:text-black font-medium">Acceder al panel</Link>
           </div>
         </div>
       </footer>

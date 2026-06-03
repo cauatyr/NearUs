@@ -2,13 +2,14 @@
 import { useState } from 'react'
 import { Plus, Edit3, Trash2, Phone, Briefcase, X, Check } from 'lucide-react'
 import { empleadosDeNegocio } from '@/lib/data/negocios'
-import { NEGOCIO_DEMO_ID } from '@/lib/data/demo-negocio'
+import { useSesion } from '@/lib/store-sesion'
 
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
 export default function EmpleadosPage() {
+  const negocioId = useSesion((s) => s.negocioId)
   const [equipo, setEquipo] = useState(
-    empleadosDeNegocio(NEGOCIO_DEMO_ID).map((e) => ({
+    empleadosDeNegocio(negocioId).map((e) => ({
       ...e,
       celular: '+593 99 000 0000',
       diasTrabajo: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']

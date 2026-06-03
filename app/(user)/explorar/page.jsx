@@ -4,11 +4,12 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
+import { useSearchParams } from 'next/navigation'
 import {
   Search, MapPin, X, Map as MapIcon, List, Locate, Star, Zap,
   ChevronRight, Sparkles, Heart, Calendar, Crown
 } from 'lucide-react'
-import { NEGOCIOS } from '@/lib/data/negocios'
+import { useNegocios } from '@/lib/data/negocios'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { useUbicacion, useReservas } from '@/lib/store'
 import { distanciaKm, formatoDistancia } from '@/lib/utils'
@@ -29,12 +30,16 @@ const MapView = dynamic(() => import('@/components/MapView'), {
 const DESTACADOS_IDS = ['n2', 'n13', 'n9']
 
 export default function ExplorarPage() {
+  const searchParams = useSearchParams()
+  const focusId = searchParams.get('focus')
   const [busqueda, setBusqueda] = useState('')
   const [categoria, setCategoria] = useState(null)
   const [seleccionado, setSeleccionado] = useState(null)
   const [vista, setVista] = useState('mapa')
+  const [focusAplicado, setFocusAplicado] = useState(false)
   const mapaRef = useRef(null)
   const { posicion } = useUbicacion()
+  const NEGOCIOS = useNegocios()
 
   const negociosFiltrados = useMemo(() => {
     let list = NEGOCIOS
@@ -73,6 +78,19 @@ export default function ExplorarPage() {
   useEffect(() => {
     if (vista === 'lista' && seleccionado) setSeleccionado(null)
   }, [vista, seleccionado])
+
+  // ?focus=<id> viene del onboarding cuando recién se crea un negocio.
+  // Limpia filtros, asegura vista mapa y selecciona — VolarA dispara el flyTo.
+  useEffect(() => {
+    if (!focusId || focusAplicado) return
+    const existe = NEGOCIOS.find((n) => n.id === focusId)
+    if (!existe) return
+    setCategoria(null)
+    setBusqueda('')
+    setVista('mapa')
+    setSeleccionado(focusId)
+    setFocusAplicado(true)
+  }, [focusId, focusAplicado, NEGOCIOS])
 
   return (
     <div className="relative h-screen overflow-hidden bg-zinc-100">

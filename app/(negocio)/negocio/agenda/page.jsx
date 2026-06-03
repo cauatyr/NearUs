@@ -2,15 +2,21 @@
 import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { Calendar, Clock, Phone, ChevronLeft, ChevronRight, Plus, Search, CreditCard, Wallet, Sparkles, TrendingUp, X } from 'lucide-react'
-import { RESERVAS_DEMO, obtenerServicioDemo, obtenerEmpleadoDemo } from '@/lib/data/demo-negocio'
+import { useReservasDemo, obtenerServicioDemo, obtenerEmpleadoDemo } from '@/lib/data/demo-negocio'
 import { empleadosDeNegocio } from '@/lib/data/negocios'
-import { NEGOCIO_DEMO_ID } from '@/lib/data/demo-negocio'
+import { useSesion } from '@/lib/store-sesion'
 import { formatoUSD, mesCorto } from '@/lib/utils'
 
 const HORAS = Array.from({ length: 13 }, (_, i) => 8 + i) // 8 a 20
 
 export default function AgendaPage() {
-  const empleados = empleadosDeNegocio(NEGOCIO_DEMO_ID)
+  const negocioId = useSesion((s) => s.negocioId)
+  const todasReservas = useReservasDemo()
+  const RESERVAS_DEMO = useMemo(
+    () => todasReservas.filter((r) => r.negocioId === negocioId),
+    [todasReservas, negocioId]
+  )
+  const empleados = empleadosDeNegocio(negocioId)
   const [fecha, setFecha] = useState(new Date())
   const [empleadoSel, setEmpleadoSel] = useState('todos')
   const [reservaAbierta, setReservaAbierta] = useState(null)

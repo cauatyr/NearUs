@@ -1,5 +1,6 @@
 import './globals.css'
 import SWRegister from '@/components/SWRegister'
+import CargadorDatos from '@/components/CargadorDatos'
 
 export const metadata = {
   title: 'NearUs — Reserva servicios cerca de ti en Cuenca',
@@ -47,7 +48,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="notranslate">
-        {children}
+        <CargadorDatos>{children}</CargadorDatos>
         <SWRegister />
       </body>
     </html>

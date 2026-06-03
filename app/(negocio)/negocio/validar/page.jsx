@@ -1,10 +1,14 @@
 'use client'
 import { useState } from 'react'
 import { QrCode, Camera, Check, X, AlertCircle, Search } from 'lucide-react'
-import { RESERVAS_DEMO, obtenerServicioDemo, obtenerEmpleadoDemo } from '@/lib/data/demo-negocio'
+import { useReservasDemo, obtenerServicioDemo, obtenerEmpleadoDemo } from '@/lib/data/demo-negocio'
+import { useSesion } from '@/lib/store-sesion'
 import { formatoUSD } from '@/lib/utils'
 
 export default function ValidarPage() {
+  const negocioId = useSesion((s) => s.negocioId)
+  const todas = useReservasDemo()
+  const RESERVAS_DEMO = todas.filter((r) => r.negocioId === negocioId)
   const [codigoBusqueda, setCodigoBusqueda] = useState('')
   const [resultado, setResultado] = useState(null)
   const [escaneando, setEscaneando] = useState(false)
