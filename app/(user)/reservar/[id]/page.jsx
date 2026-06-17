@@ -8,7 +8,7 @@ import {
 import { useReservas } from '@/lib/store'
 import { useCliente } from '@/lib/store-cliente'
 import { useDatosStore } from '@/lib/store-datos'
-import { formatoUSD, formatoDuracion, siguientesDias, generarHorarios, diasSemanaCorto, ahoraEnCuenca, fechaEnCuenca } from '@/lib/utils'
+import { formatoUSD, formatoDuracion, siguientesDias, generarHorarios, diasSemanaCorto, ahoraEnCuenca, diaLocalISO } from '@/lib/utils'
 
 export default function ReservarPage() {
   const { id } = useParams()
@@ -32,8 +32,10 @@ export default function ReservarPage() {
   const horarios = generarHorarios(9, 19, 30)
   const horariosOcupados = ['10:30', '14:00', '16:30']
   // No permitir horarios ya pasados cuando el día elegido es hoy (hora de Cuenca).
+  // Compara el día del chip (calendario local que el usuario ve) con el hoy de Cuenca,
+  // así funciona aunque el dispositivo esté en otra zona horaria (ej. test desde Brasil).
   const { fecha: hoyCuenca, minutos: ahoraMin } = ahoraEnCuenca()
-  const esHoyCuenca = fechaEnCuenca(fecha) === hoyCuenca
+  const esHoyCuenca = diaLocalISO(fecha) === hoyCuenca
   const horariosFiltrados = horarios.filter((h) => {
     if (horariosOcupados.includes(h)) return false
     if (esHoyCuenca) {
@@ -52,7 +54,7 @@ export default function ReservarPage() {
     }
     setConfirmando(true)
     // Timestamp en hora de Cuenca (UTC-5) para guardar el instante correcto.
-    const fechaDia = fechaEnCuenca(fecha)
+    const fechaDia = diaLocalISO(fecha)
     const fechaISO = new Date(`${fechaDia}T${hora}:00-05:00`).toISOString()
     setTimeout(async () => {
       // Copia local — para "Mis reservas" y la pantalla de confirmación del cliente.
