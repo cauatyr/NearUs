@@ -92,7 +92,7 @@ function iconoNegocio(negocio, opciones = {}) {
           overflow:hidden;
           transition:all 0.2s;
         ">
-          <img src="${negocio.logo || logoPlaceholder(negocio.nombre, cat.color)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" />
+          <img src="${negocio.logo || negocio.imagen || logoPlaceholder(negocio.nombre, cat.color)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.onerror=null;this.src='${logoPlaceholder(negocio.nombre, cat.color)}'" />
         </div>
         ${ahoraHTML}
       </div>
