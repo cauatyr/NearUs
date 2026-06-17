@@ -5,7 +5,8 @@ import { Calendar, Clock, Phone, ChevronLeft, ChevronRight, Plus, Search, Credit
 import { useReservasDemo, obtenerServicioDemo, obtenerEmpleadoDemo } from '@/lib/data/demo-negocio'
 import { empleadosDeNegocio } from '@/lib/data/negocios'
 import { useSesion } from '@/lib/store-sesion'
-import { formatoUSD, mesCorto } from '@/lib/utils'
+import { useDatosStore } from '@/lib/store-datos'
+import { formatoUSD, mesCorto, siguientesDias, generarHorarios, diasSemanaCorto } from '@/lib/utils'
 
 const HORAS = Array.from({ length: 13 }, (_, i) => 8 + i) // 8 a 20
 
@@ -209,6 +210,37 @@ function DetalleReserva({ reserva, onCerrar }) {
   const servicio = obtenerServicioDemo(reserva.servicioId)
   const empleado = obtenerEmpleadoDemo(reserva.empleadoId)
   const fecha = new Date(reserva.fecha)
+  const actualizarReserva = useDatosStore((s) => s.actualizarReserva)
+
+  const [guardando, setGuardando] = useState(false)
+  const [reagendando, setReagendando] = useState(false)
+  const [nuevaFecha, setNuevaFecha] = useState(fecha)
+  const [nuevaHora, setNuevaHora] = useState(null)
+  const [error, setError] = useState(null)
+
+  const atendido = reserva.estado === 'completada'
+  const dias = siguientesDias(14)
+  const horarios = generarHorarios(8, 20, 30)
+
+  const marcarAtendido = async () => {
+    setGuardando(true)
+    const { error: err } = await actualizarReserva(reserva.id, { estado: 'completada' })
+    setGuardando(false)
+    if (err) { setError(err); return }
+    onCerrar()
+  }
+
+  const confirmarReagenda = async () => {
+    if (!nuevaHora) return
+    const [hh, mm] = nuevaHora.split(':').map(Number)
+    const inicio = new Date(nuevaFecha)
+    inicio.setHours(hh, mm, 0, 0)
+    setGuardando(true)
+    const { error: err } = await actualizarReserva(reserva.id, { fecha: inicio.toISOString() })
+    setGuardando(false)
+    if (err) { setError(err); return }
+    onCerrar()
+  }
 
   return (
     <div className="bg-white md:rounded-2xl border border-zinc-100 p-5 md:sticky md:top-5">
@@ -237,16 +269,84 @@ function DetalleReserva({ reserva, onCerrar }) {
         <Fila label="Duración" valor={`${reserva.duracion} min`} />
         <Fila label="Pago" valor={reserva.metodoPago === 'inapp' ? 'App (pre-autorizado)' : 'En el local'} />
         <Fila label="Total" valor={formatoUSD(reserva.precio)} destacado />
+        <Fila label="Estado" valor={atendido ? 'Atendido ✓' : 'Confirmada'} />
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-2">
-        <button className="bg-white border border-zinc-200 hover:bg-zinc-50 rounded-full py-2.5 text-xs font-medium text-zinc-700">
-          Reagendar
-        </button>
-        <button className="bg-marca-500 hover:bg-marca-600 text-white rounded-full py-2.5 text-xs font-semibold">
-          Marcar atendido
-        </button>
-      </div>
+      {error && (
+        <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">
+          No se pudo guardar: {error}
+        </div>
+      )}
+
+      {reagendando ? (
+        <div className="mt-5">
+          <div className="text-xs font-semibold text-zinc-700 mb-2">Nueva fecha</div>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
+            {dias.map((d) => {
+              const sel = d.toDateString() === nuevaFecha.toDateString()
+              return (
+                <button
+                  key={d.toISOString()}
+                  onClick={() => setNuevaFecha(d)}
+                  className={`shrink-0 w-12 py-2 rounded-xl border-2 transition flex flex-col items-center ${
+                    sel ? 'border-marca-500 bg-marca-500 text-white' : 'border-zinc-200 text-zinc-700'
+                  }`}
+                >
+                  <span className="text-[9px] uppercase font-medium">{diasSemanaCorto(d)}</span>
+                  <span className="text-base font-semibold leading-tight">{d.getDate()}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="text-xs font-semibold text-zinc-700 mt-3 mb-2">Nueva hora</div>
+          <div className="grid grid-cols-4 gap-1.5 max-h-36 overflow-y-auto">
+            {horarios.map((h) => (
+              <button
+                key={h}
+                onClick={() => setNuevaHora(h)}
+                className={`py-2 rounded-lg text-xs font-medium border-2 transition ${
+                  nuevaHora === h ? 'border-marca-500 bg-marca-500 text-white' : 'border-zinc-200 text-zinc-700'
+                }`}
+              >
+                {h}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <button
+              onClick={() => { setReagendando(false); setNuevaHora(null) }}
+              className="bg-white border border-zinc-200 hover:bg-zinc-50 rounded-full py-2.5 text-xs font-medium text-zinc-700"
+            >
+              Cancelar
+            </button>
+            <button
+              disabled={!nuevaHora || guardando}
+              onClick={confirmarReagenda}
+              className="bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-full py-2.5 text-xs font-semibold"
+            >
+              {guardando ? 'Guardando…' : 'Confirmar nueva fecha'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setReagendando(true)}
+            className="bg-white border border-zinc-200 hover:bg-zinc-50 rounded-full py-2.5 text-xs font-medium text-zinc-700"
+          >
+            Reagendar
+          </button>
+          <button
+            onClick={marcarAtendido}
+            disabled={guardando || atendido}
+            className="bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-full py-2.5 text-xs font-semibold"
+          >
+            {atendido ? 'Atendido ✓' : guardando ? 'Guardando…' : 'Marcar atendido'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
