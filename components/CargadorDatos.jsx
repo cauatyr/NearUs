@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useDatosStore } from '@/lib/store-datos'
 import { useSesion } from '@/lib/store-sesion'
+import { useCliente } from '@/lib/store-cliente'
 
 export default function CargadorDatos({ children }) {
   const cargado = useDatosStore((s) => s.cargado)
@@ -12,8 +13,9 @@ export default function CargadorDatos({ children }) {
 
   useEffect(() => {
     cargar()
-    // Inicializar sesión en paralelo (no bloquea la carga de datos)
+    // Inicializar sesiones en paralelo (no bloquea la carga de datos)
     useSesion.getState().inicializar()
+    useCliente.getState().inicializar()
   }, [cargar])
 
   if (error) {

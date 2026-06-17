@@ -79,6 +79,7 @@ export default function ReservarPage() {
         duracion: servicio.duracion,
         precio: servicio.precio,
         metodoPago: pago,
+        clienteUserId: cliente.id,
         cliente: { nombre: cliente.nombre, celular: cliente.celular }
       })
       if (error) console.warn('No se pudo guardar la reserva en el negocio:', error)

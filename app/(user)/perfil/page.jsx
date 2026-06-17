@@ -1,9 +1,10 @@
 'use client'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Calendar, Heart, Star, ChevronRight, Settings, LogOut, Award } from 'lucide-react'
 import { useReservas } from '@/lib/store'
 import { useCliente } from '@/lib/store-cliente'
+import { useDatosStore } from '@/lib/store-datos'
 import { obtenerNegocio, obtenerServicio, useNegocios } from '@/lib/data/negocios'
 import { formatoUSD, mesCorto, diasSemanaCorto } from '@/lib/utils'
 import TarjetaNegocio from '@/components/TarjetaNegocio'
@@ -11,11 +12,18 @@ import { useUbicacion } from '@/lib/store'
 
 export default function PerfilPage() {
   const [tab, setTab] = useState('reservas')
-  const { reservas, favoritos } = useReservas()
+  const { favoritos } = useReservas()
   const { posicion } = useUbicacion()
   const NEGOCIOS = useNegocios()
   const cliente = useCliente((s) => s.cliente)
   const cerrarSesion = useCliente((s) => s.cerrarSesion)
+
+  // Reservas del cliente desde Supabase (ligadas a su cuenta — cross-device).
+  const todasReservas = useDatosStore((s) => s.reservas)
+  const reservas = useMemo(
+    () => (cliente ? todasReservas.filter((r) => r.clienteUserId === cliente.id) : []),
+    [todasReservas, cliente]
+  )
 
   const iniciales = cliente
     ? cliente.nombre.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase()
@@ -171,6 +179,9 @@ function ItemReserva({ reserva }) {
   const negocio = obtenerNegocio(reserva.negocioId)
   const servicio = obtenerServicio(reserva.servicioId)
   const fecha = new Date(reserva.fecha)
+  const hora =
+    reserva.hora ||
+    `${String(fecha.getHours()).padStart(2, '0')}:${String(fecha.getMinutes()).padStart(2, '0')}`
   const colorEstado = {
     confirmada: 'bg-marca-100 text-marca-700',
     completada: 'bg-acento-500 text-white',
@@ -193,7 +204,7 @@ function ItemReserva({ reserva }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-[10px] uppercase tracking-wide text-zinc-500 font-medium">
-            {diasSemanaCorto(fecha)} {mesCorto(fecha)} · {reserva.hora}
+            {diasSemanaCorto(fecha)} {mesCorto(fecha)} · {hora}
           </span>
           <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${colorEstado}`}>
             {textoEstado}

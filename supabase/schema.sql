@@ -67,6 +67,7 @@ create table reservas (
   negocio_id      text references negocios(id) on delete cascade,
   servicio_id     text references servicios(id),
   empleado_id     text references empleados(id),
+  cliente_user_id uuid references auth.users(id),
   cliente_nombre  text not null,
   cliente_celular text,
   fecha           timestamptz not null,

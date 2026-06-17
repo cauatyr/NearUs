@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { QRCodeSVG } from 'qrcode.react'
 import { Check, MapPin, Clock, Calendar, Phone, Home, X, Share2 } from 'lucide-react'
 import { useReservas } from '@/lib/store'
+import { useDatosStore } from '@/lib/store-datos'
 import { obtenerNegocio, obtenerServicio } from '@/lib/data/negocios'
 import { formatoUSD, formatoDuracion, mesCorto, diasSemanaCorto } from '@/lib/utils'
 
@@ -11,7 +12,10 @@ export default function ConfirmacionPage() {
   const { id } = useParams()
   const router = useRouter()
   const { reservas, cancelarReserva } = useReservas()
-  const reserva = reservas.find((r) => r.id === id)
+  const supaReservas = useDatosStore((s) => s.reservas)
+  const actualizarReserva = useDatosStore((s) => s.actualizarReserva)
+  // Busca primero la copia local (instantánea tras reservar), luego Supabase (cross-device).
+  const reserva = reservas.find((r) => r.id === id) || supaReservas.find((r) => r.id === id)
 
   if (!reserva) {
     return (
@@ -27,6 +31,9 @@ export default function ConfirmacionPage() {
   const negocio = obtenerNegocio(reserva.negocioId)
   const servicio = obtenerServicio(reserva.servicioId)
   const fecha = new Date(reserva.fecha)
+  const hora =
+    reserva.hora ||
+    `${String(fecha.getHours()).padStart(2, '0')}:${String(fecha.getMinutes()).padStart(2, '0')}`
   const cancelada = reserva.estado === 'cancelada'
 
   return (
@@ -92,7 +99,7 @@ export default function ConfirmacionPage() {
           </div>
 
           <Detalle icono={Calendar} titulo="Fecha y hora">
-            {diasSemanaCorto(fecha)} {fecha.getDate()} de {mesCorto(fecha)} · {reserva.hora}
+            {diasSemanaCorto(fecha)} {fecha.getDate()} de {mesCorto(fecha)} · {hora}
           </Detalle>
 
           <Detalle icono={MapPin} titulo="Dirección">
@@ -116,7 +123,10 @@ export default function ConfirmacionPage() {
             </button>
             <button
               onClick={() => {
-                if (confirm('¿Cancelar esta reserva?')) cancelarReserva(reserva.id)
+                if (confirm('¿Cancelar esta reserva?')) {
+                  cancelarReserva(reserva.id)
+                  actualizarReserva(reserva.id, { estado: 'cancelada' })
+                }
               }}
               className="bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded-2xl py-3 text-sm font-medium flex items-center justify-center gap-2"
             >

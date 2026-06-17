@@ -27,14 +27,17 @@ function CuentaInner() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
+  const [cargando, setCargando] = useState(false)
 
-  const enviar = (e) => {
+  const enviar = async (e) => {
     e.preventDefault()
     setError(null)
+    setCargando(true)
     const { error: err } =
       modo === 'registro'
-        ? registrar({ nombre, email, celular, password })
-        : iniciarSesion({ email, password })
+        ? await registrar({ nombre, email, celular, password })
+        : await iniciarSesion({ email, password })
+    setCargando(false)
     if (err) {
       setError(err)
       return
@@ -147,9 +150,11 @@ function CuentaInner() {
 
             <button
               type="submit"
-              className="w-full bg-marca-500 hover:bg-marca-600 text-white font-semibold py-3 rounded-full transition"
+              disabled={cargando}
+              className="w-full bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-semibold py-3 rounded-full transition flex items-center justify-center gap-2"
             >
-              {modo === 'registro' ? 'Crear cuenta y continuar' : 'Iniciar sesión'}
+              {cargando && <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
+              {cargando ? 'Procesando…' : modo === 'registro' ? 'Crear cuenta y continuar' : 'Iniciar sesión'}
             </button>
           </form>
 
