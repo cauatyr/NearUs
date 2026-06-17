@@ -8,7 +8,7 @@ import {
 import { useReservas } from '@/lib/store'
 import { useCliente } from '@/lib/store-cliente'
 import { useDatosStore } from '@/lib/store-datos'
-import { formatoUSD, formatoDuracion, siguientesDias, generarHorarios, diasSemanaCorto } from '@/lib/utils'
+import { formatoUSD, formatoDuracion, siguientesDias, generarHorarios, diasSemanaCorto, ahoraEnCuenca, fechaEnCuenca } from '@/lib/utils'
 
 export default function ReservarPage() {
   const { id } = useParams()
@@ -31,7 +31,17 @@ export default function ReservarPage() {
   const dias = siguientesDias(14)
   const horarios = generarHorarios(9, 19, 30)
   const horariosOcupados = ['10:30', '14:00', '16:30']
-  const horariosFiltrados = horarios.filter((h) => !horariosOcupados.includes(h))
+  // No permitir horarios ya pasados cuando el día elegido es hoy (hora de Cuenca).
+  const { fecha: hoyCuenca, minutos: ahoraMin } = ahoraEnCuenca()
+  const esHoyCuenca = fechaEnCuenca(fecha) === hoyCuenca
+  const horariosFiltrados = horarios.filter((h) => {
+    if (horariosOcupados.includes(h)) return false
+    if (esHoyCuenca) {
+      const [hh, mm] = h.split(':').map(Number)
+      if (hh * 60 + mm <= ahoraMin) return false
+    }
+    return true
+  })
 
   const confirmar = () => {
     if (!hora) return
@@ -41,17 +51,16 @@ export default function ReservarPage() {
       return
     }
     setConfirmando(true)
-    // Combina la fecha elegida con la hora para tener un timestamp real.
-    const [hh, mm] = hora.split(':').map(Number)
-    const inicio = new Date(fecha)
-    inicio.setHours(hh, mm, 0, 0)
+    // Timestamp en hora de Cuenca (UTC-5) para guardar el instante correcto.
+    const fechaDia = fechaEnCuenca(fecha)
+    const fechaISO = new Date(`${fechaDia}T${hora}:00-05:00`).toISOString()
     setTimeout(async () => {
       // Copia local — para "Mis reservas" y la pantalla de confirmación del cliente.
       const reserva = crearReserva({
         negocioId: negocio.id,
         servicioId: servicio.id,
         empleadoId: empleado,
-        fecha: inicio.toISOString(),
+        fecha: fechaISO,
         hora,
         duracion: servicio.duracion,
         precio: servicio.precio,
@@ -66,7 +75,7 @@ export default function ReservarPage() {
         negocioId: negocio.id,
         servicioId: servicio.id,
         empleadoId: empleado === 'cualquiera' ? null : empleado,
-        fecha: inicio.toISOString(),
+        fecha: fechaISO,
         duracion: servicio.duracion,
         precio: servicio.precio,
         metodoPago: pago,
