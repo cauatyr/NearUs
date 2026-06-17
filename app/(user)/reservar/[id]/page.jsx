@@ -6,6 +6,7 @@ import {
   obtenerServicio, obtenerNegocio, empleadosDeNegocio
 } from '@/lib/data/negocios'
 import { useReservas } from '@/lib/store'
+import { useCliente } from '@/lib/store-cliente'
 import { formatoUSD, formatoDuracion, siguientesDias, generarHorarios, diasSemanaCorto } from '@/lib/utils'
 
 export default function ReservarPage() {
@@ -23,6 +24,7 @@ export default function ReservarPage() {
   const [confirmando, setConfirmando] = useState(false)
 
   const { crearReserva } = useReservas()
+  const cliente = useCliente((s) => s.cliente)
 
   const dias = siguientesDias(14)
   const horarios = generarHorarios(9, 19, 30)
@@ -31,14 +33,27 @@ export default function ReservarPage() {
 
   const confirmar = () => {
     if (!hora) return
+    // Login obligatorio para reservar — si no hay cliente, vamos a /cuenta y volvemos.
+    if (!cliente) {
+      router.push(`/cuenta?next=${encodeURIComponent('/reservar/' + id)}`)
+      return
+    }
     setConfirmando(true)
+    // Combina la fecha elegida con la hora para tener un timestamp real.
+    const [hh, mm] = hora.split(':').map(Number)
+    const inicio = new Date(fecha)
+    inicio.setHours(hh, mm, 0, 0)
     setTimeout(() => {
       const reserva = crearReserva({
         negocioId: negocio.id,
         servicioId: servicio.id,
         empleadoId: empleado,
-        fecha: fecha.toISOString(),
+        fecha: inicio.toISOString(),
         hora,
+        duracion: servicio.duracion,
+        precio: servicio.precio,
+        metodoPago: pago,
+        cliente: { nombre: cliente.nombre, celular: cliente.celular },
         modo: 'agendada'
       })
       router.push(`/confirmacion/${reserva.id}`)
@@ -178,13 +193,18 @@ export default function ReservarPage() {
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               Confirmando...
             </>
-          ) : hora ? (
+          ) : !hora ? (
+            'Selecciona un horario'
+          ) : !cliente ? (
+            <>
+              <Calendar className="w-4 h-4" />
+              Inicia sesión para reservar
+            </>
+          ) : (
             <>
               <Calendar className="w-4 h-4" />
               Confirmar reserva · {formatoUSD(servicio.precio)}
             </>
-          ) : (
-            'Selecciona un horario'
           )}
         </button>
       </div>

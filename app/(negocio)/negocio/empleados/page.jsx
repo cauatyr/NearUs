@@ -1,35 +1,66 @@
 'use client'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Plus, Edit3, Trash2, Phone, Briefcase, X, Check } from 'lucide-react'
-import { empleadosDeNegocio } from '@/lib/data/negocios'
+import { useDatosStore } from '@/lib/store-datos'
 import { useSesion } from '@/lib/store-sesion'
 
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
 export default function EmpleadosPage() {
   const negocioId = useSesion((s) => s.negocioId)
-  const [equipo, setEquipo] = useState(
-    empleadosDeNegocio(negocioId).map((e) => ({
-      ...e,
-      celular: '+593 99 000 0000',
-      diasTrabajo: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-    }))
+  const todos = useDatosStore((s) => s.empleados)
+  const equipo = useMemo(
+    () =>
+      todos
+        .filter((e) => e.negocioId === negocioId)
+        .map((e) => ({
+          ...e,
+          celular: e.celular || '+593 99 000 0000',
+          diasTrabajo: e.diasTrabajo || ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+        })),
+    [todos, negocioId]
   )
+  const agregarEmpleado = useDatosStore((s) => s.agregarEmpleado)
+  const actualizarEmpleado = useDatosStore((s) => s.actualizarEmpleado)
+  const eliminarEmpleado = useDatosStore((s) => s.eliminarEmpleado)
   const [editando, setEditando] = useState(null)
+  const [error, setError] = useState(null)
 
-  const guardar = (datos) => {
-    if (datos.id) {
-      setEquipo((eq) => eq.map((e) => (e.id === datos.id ? { ...e, ...datos } : e)))
-    } else {
-      const avatar = datos.nombre.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
-      setEquipo((eq) => [...eq, { ...datos, id: 'new-' + Date.now(), avatar }])
+  const guardar = async (datos) => {
+    const avatar = (datos.nombre || '')
+      .split(' ')
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase()
+    const { error: err } = datos.id
+      ? await actualizarEmpleado(datos.id, {
+          nombre: datos.nombre,
+          cargo: datos.cargo,
+          avatar,
+          celular: datos.celular,
+          diasTrabajo: datos.diasTrabajo
+        })
+      : await agregarEmpleado({
+          negocioId,
+          nombre: datos.nombre,
+          cargo: datos.cargo,
+          avatar,
+          celular: datos.celular,
+          diasTrabajo: datos.diasTrabajo
+        })
+    if (err) {
+      setError(err)
+      return
     }
+    setError(null)
     setEditando(null)
   }
 
-  const eliminar = (id) => {
+  const eliminar = async (id) => {
     if (!confirm('¿Eliminar a este miembro del equipo?')) return
-    setEquipo((eq) => eq.filter((e) => e.id !== id))
+    const { error: err } = await eliminarEmpleado(id)
+    if (err) setError(err)
   }
 
   return (
@@ -46,6 +77,12 @@ export default function EmpleadosPage() {
           <Plus className="w-4 h-4" /> Agregar
         </button>
       </div>
+
+      {error && (
+        <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+          No se pudo guardar: {error}
+        </div>
+      )}
 
       {/* Grid de empleados */}
       <div className="mt-7 grid sm:grid-cols-2 gap-3">

@@ -15,9 +15,11 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-marca-600 hover:text-marca-700 border border-marca-200 hover:bg-marca-50 rounded-full px-4 py-2 transition"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-marca-600 hover:text-marca-700 border border-marca-200 hover:bg-marca-50 rounded-full px-3 sm:px-4 py-2 transition"
             >
-              <LogIn className="w-4 h-4" /> Acceder a mi empresa
+              <LogIn className="w-4 h-4" />
+              <span className="hidden sm:inline">Acceder a mi empresa</span>
+              <span className="sm:hidden">Empresa</span>
             </Link>
             <Link
               href="/explorar"

@@ -52,11 +52,13 @@ create table servicios (
 );
 
 create table empleados (
-  id          text primary key,
-  negocio_id  text references negocios(id) on delete cascade,
-  nombre      text not null,
-  cargo       text,
-  avatar      text                  -- iniciales
+  id            text primary key,
+  negocio_id    text references negocios(id) on delete cascade,
+  nombre        text not null,
+  cargo         text,
+  avatar        text,                 -- iniciales
+  celular       text,
+  dias_trabajo  text[]
 );
 
 create table reservas (

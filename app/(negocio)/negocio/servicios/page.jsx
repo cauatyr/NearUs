@@ -1,27 +1,40 @@
 'use client'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Plus, Edit3, Trash2, Clock, X, Check } from 'lucide-react'
-import { serviciosDeNegocio } from '@/lib/data/negocios'
+import { useDatosStore } from '@/lib/store-datos'
 import { useSesion } from '@/lib/store-sesion'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { formatoUSD, formatoDuracion } from '@/lib/utils'
 
 export default function ServiciosPage() {
   const negocioId = useSesion((s) => s.negocioId)
-  const [servicios, setServicios] = useState(serviciosDeNegocio(negocioId))
+  const todos = useDatosStore((s) => s.servicios)
+  const servicios = useMemo(
+    () => todos.filter((x) => x.negocioId === negocioId),
+    [todos, negocioId]
+  )
+  const agregarServicio = useDatosStore((s) => s.agregarServicio)
+  const actualizarServicio = useDatosStore((s) => s.actualizarServicio)
+  const eliminarServicio = useDatosStore((s) => s.eliminarServicio)
   const [editando, setEditando] = useState(null)
+  const [error, setError] = useState(null)
 
-  const eliminar = (id) => {
+  const eliminar = async (id) => {
     if (!confirm('¿Eliminar este servicio?')) return
-    setServicios((s) => s.filter((x) => x.id !== id))
+    const { error: err } = await eliminarServicio(id)
+    if (err) setError(err)
   }
 
-  const guardar = (datos) => {
-    if (datos.id) {
-      setServicios((s) => s.map((x) => (x.id === datos.id ? { ...x, ...datos } : x)))
-    } else {
-      setServicios((s) => [...s, { ...datos, id: 'new-' + Date.now() }])
+  const guardar = async (datos) => {
+    const { id, ...campos } = datos
+    const { error: err } = id
+      ? await actualizarServicio(id, campos)
+      : await agregarServicio({ negocioId, ...campos })
+    if (err) {
+      setError(err)
+      return
     }
+    setError(null)
     setEditando(null)
   }
 
@@ -39,6 +52,12 @@ export default function ServiciosPage() {
           <Plus className="w-4 h-4" /> Nuevo servicio
         </button>
       </div>
+
+      {error && (
+        <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+          No se pudo guardar: {error}
+        </div>
+      )}
 
       {/* Stats */}
       <div className="mt-6 grid grid-cols-3 gap-3">

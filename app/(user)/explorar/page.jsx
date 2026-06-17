@@ -190,8 +190,8 @@ export default function ExplorarPage() {
       {/* === CONTADOR FLOTANTE === */}
       {vista === 'mapa' && !negocioSel && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 z-20 bg-black text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-flotante flex items-center gap-2"
-          style={{ bottom: 'calc(5.5rem + var(--safe-bottom))' }}
+          className="fixed left-1/2 -translate-x-1/2 z-40 bg-black text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-flotante flex items-center gap-2"
+          style={{ bottom: 'calc(5rem + var(--safe-bottom))' }}
         >
           <Sparkles className="w-3.5 h-3.5 text-marca-500" />
           <strong>{negociosFiltrados.length}</strong> servicios cerca de ti

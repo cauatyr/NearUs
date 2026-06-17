@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Calendar, Heart, Star, ChevronRight, Settings, LogOut, Award } from 'lucide-react'
 import { useReservas } from '@/lib/store'
+import { useCliente } from '@/lib/store-cliente'
 import { obtenerNegocio, obtenerServicio, useNegocios } from '@/lib/data/negocios'
 import { formatoUSD, mesCorto, diasSemanaCorto } from '@/lib/utils'
 import TarjetaNegocio from '@/components/TarjetaNegocio'
@@ -13,6 +14,12 @@ export default function PerfilPage() {
   const { reservas, favoritos } = useReservas()
   const { posicion } = useUbicacion()
   const NEGOCIOS = useNegocios()
+  const cliente = useCliente((s) => s.cliente)
+  const cerrarSesion = useCliente((s) => s.cerrarSesion)
+
+  const iniciales = cliente
+    ? cliente.nombre.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase()
+    : 'IN'
 
   const activas = reservas.filter((r) => r.estado === 'confirmada')
   const pasadas = reservas.filter((r) => r.estado !== 'confirmada')
@@ -22,15 +29,39 @@ export default function PerfilPage() {
     <div className="pb-24">
       {/* Cabecera */}
       <div className="bg-gradient-to-br from-marca-500 to-marca-700 text-white px-5 pt-10 pb-12 relative">
-        <button className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/15 grid place-items-center">
-          <Settings className="w-4 h-4" />
-        </button>
+        {cliente ? (
+          <button
+            onClick={cerrarSesion}
+            title="Cerrar sesión"
+            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/15 grid place-items-center hover:bg-white/25 transition"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        ) : (
+          <button className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/15 grid place-items-center">
+            <Settings className="w-4 h-4" />
+          </button>
+        )}
         <div className="w-20 h-20 rounded-full bg-white/20 grid place-items-center text-2xl font-semibold">
-          IT
+          {iniciales}
         </div>
         <div className="mt-4">
-          <h1 className="text-xl font-semibold">Invitado</h1>
-          <p className="text-marca-100 text-sm">Inicia sesión para guardar tus reservas en la nube</p>
+          {cliente ? (
+            <>
+              <h1 className="text-xl font-semibold">{cliente.nombre}</h1>
+              <p className="text-marca-100 text-sm">{cliente.email}</p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-xl font-semibold">Invitado</h1>
+              <Link
+                href="/cuenta"
+                className="mt-2 inline-block bg-white/15 hover:bg-white/25 transition rounded-full px-4 py-1.5 text-sm font-medium"
+              >
+                Iniciar sesión o crear cuenta
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
