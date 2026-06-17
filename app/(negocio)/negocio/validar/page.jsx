@@ -1,38 +1,93 @@
 'use client'
-import { useState } from 'react'
-import { QrCode, Camera, Check, X, AlertCircle, Search } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { QrCode, Camera, CameraOff, Check, X, AlertCircle, Search } from 'lucide-react'
 import { useReservasDemo, obtenerServicioDemo, obtenerEmpleadoDemo } from '@/lib/data/demo-negocio'
 import { useSesion } from '@/lib/store-sesion'
+import { useDatosStore } from '@/lib/store-datos'
 import { formatoUSD } from '@/lib/utils'
+
+const QR_REGION_ID = 'qr-reader-region'
+
+// Acepta "nearus://reserva/NU-XXXX" o el código pelado y devuelve el código.
+function extraerCodigo(texto) {
+  if (!texto) return ''
+  const limpio = String(texto).trim()
+  const m = limpio.match(/([A-Za-z]{2}-[A-Za-z0-9]+)\s*$/)
+  if (m) return m[1].toUpperCase()
+  return limpio.split('/').pop().toUpperCase()
+}
 
 export default function ValidarPage() {
   const negocioId = useSesion((s) => s.negocioId)
   const todas = useReservasDemo()
-  const RESERVAS_DEMO = todas.filter((r) => r.negocioId === negocioId)
+  const RESERVAS = todas.filter((r) => r.negocioId === negocioId)
+  const actualizarReserva = useDatosStore((s) => s.actualizarReserva)
+
   const [codigoBusqueda, setCodigoBusqueda] = useState('')
   const [resultado, setResultado] = useState(null)
   const [escaneando, setEscaneando] = useState(false)
+  const [errorCam, setErrorCam] = useState(null)
+  const scannerRef = useRef(null)
 
-  const reservasHoy = RESERVAS_DEMO.filter((r) => {
+  const reservasHoy = RESERVAS.filter((r) => {
     const f = new Date(r.fecha)
     return f.toDateString() === new Date().toDateString() && r.estado === 'confirmada'
   })
 
-  const buscar = () => {
-    const limpio = codigoBusqueda.trim().toUpperCase()
+  // Busca por código contra los datos más frescos del store (evita closures viejos).
+  const buscarPorCodigo = (codigo) => {
+    const limpio = extraerCodigo(codigo)
     if (!limpio) return
-    const encontrada = RESERVAS_DEMO.find((r) => r.codigo === limpio)
+    const delNegocio = useDatosStore.getState().reservas.filter((r) => r.negocioId === negocioId)
+    const encontrada = delNegocio.find((r) => r.codigo === limpio)
     setResultado(encontrada || { error: true, codigo: limpio })
   }
 
-  const simularEscaneo = () => {
-    setEscaneando(true)
-    setTimeout(() => {
-      const aleatoria = reservasHoy[Math.floor(Math.random() * reservasHoy.length)]
-      setResultado(aleatoria)
-      setEscaneando(false)
-    }, 1800)
+  const detener = async () => {
+    const s = scannerRef.current
+    scannerRef.current = null
+    if (s) {
+      try { await s.stop() } catch {}
+      try { s.clear() } catch {}
+    }
+    setEscaneando(false)
   }
+
+  const iniciar = async () => {
+    setErrorCam(null)
+    setResultado(null)
+    setEscaneando(true)
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode')
+      const scanner = new Html5Qrcode(QR_REGION_ID)
+      scannerRef.current = scanner
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (decoded) => {
+          buscarPorCodigo(decoded)
+          detener()
+        },
+        () => {} // ignora fallos por frame
+      )
+    } catch (e) {
+      setErrorCam('No pudimos acceder a la cámara. Revisa los permisos del navegador o usa el código manual.')
+      setEscaneando(false)
+      scannerRef.current = null
+    }
+  }
+
+  // Limpieza al desmontar
+  useEffect(() => {
+    return () => {
+      const s = scannerRef.current
+      if (s) {
+        try { s.stop().catch(() => {}) } catch {}
+      }
+    }
+  }, [])
+
+  const buscar = () => buscarPorCodigo(codigoBusqueda)
 
   return (
     <div className="p-5 md:p-8 max-w-3xl">
@@ -44,34 +99,8 @@ export default function ValidarPage() {
       {/* Scanner area */}
       <div className="mt-7 bg-white rounded-3xl border border-zinc-100 p-5">
         <div className="aspect-square max-w-xs mx-auto bg-zinc-900 rounded-2xl relative overflow-hidden">
-          {escaneando ? (
-            <>
-              {/* Marco escaneo */}
-              <div className="absolute inset-8 border-2 border-white/40 rounded-2xl">
-                <div className="absolute -top-px -left-px w-8 h-8 border-t-4 border-l-4 border-marca-300 rounded-tl-2xl" />
-                <div className="absolute -top-px -right-px w-8 h-8 border-t-4 border-r-4 border-marca-300 rounded-tr-2xl" />
-                <div className="absolute -bottom-px -left-px w-8 h-8 border-b-4 border-l-4 border-marca-300 rounded-bl-2xl" />
-                <div className="absolute -bottom-px -right-px w-8 h-8 border-b-4 border-r-4 border-marca-300 rounded-br-2xl" />
-              </div>
-              {/* Línea animada */}
-              <div
-                className="absolute left-8 right-8 h-0.5 bg-marca-300 shadow-[0_0_12px_2px_rgba(83,74,183,0.8)]"
-                style={{
-                  animation: 'escaner 1.6s ease-in-out infinite alternate',
-                  top: '30%'
-                }}
-              />
-              <style>{`
-                @keyframes escaner {
-                  from { top: 25%; }
-                  to { top: 75%; }
-                }
-              `}</style>
-              <div className="absolute bottom-4 left-0 right-0 text-center text-white text-xs">
-                Escaneando...
-              </div>
-            </>
-          ) : (
+          <div id={QR_REGION_ID} className={escaneando ? 'w-full h-full' : 'hidden'} />
+          {!escaneando && (
             <div className="absolute inset-0 grid place-items-center text-white/60">
               <div className="text-center">
                 <QrCode className="w-20 h-20 mx-auto opacity-50" />
@@ -81,14 +110,28 @@ export default function ValidarPage() {
           )}
         </div>
 
-        <button
-          onClick={simularEscaneo}
-          disabled={escaneando}
-          className="mt-5 w-full bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 text-white font-semibold py-3 rounded-full flex items-center justify-center gap-2"
-        >
-          <Camera className="w-4 h-4" />
-          {escaneando ? 'Escaneando...' : 'Iniciar escaneo'}
-        </button>
+        {!escaneando ? (
+          <button
+            onClick={iniciar}
+            className="mt-5 w-full bg-marca-500 hover:bg-marca-600 text-white font-semibold py-3 rounded-full flex items-center justify-center gap-2"
+          >
+            <Camera className="w-4 h-4" /> Iniciar escaneo
+          </button>
+        ) : (
+          <button
+            onClick={detener}
+            className="mt-5 w-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold py-3 rounded-full flex items-center justify-center gap-2"
+          >
+            <CameraOff className="w-4 h-4" /> Detener
+          </button>
+        )}
+
+        {errorCam && (
+          <div className="mt-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-2 text-sm text-red-700">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+            <div className="text-xs">{errorCam}</div>
+          </div>
+        )}
       </div>
 
       {/* O ingresar código */}
@@ -112,7 +155,13 @@ export default function ValidarPage() {
       </div>
 
       {/* Resultado */}
-      {resultado && !resultado.error && <TarjetaResultado reserva={resultado} onCerrar={() => setResultado(null)} />}
+      {resultado && !resultado.error && (
+        <TarjetaResultado
+          reserva={resultado}
+          onCerrar={() => setResultado(null)}
+          onConfirmar={(id) => actualizarReserva(id, { estado: 'completada' })}
+        />
+      )}
       {resultado?.error && <TarjetaError codigo={resultado.codigo} onCerrar={() => setResultado(null)} />}
 
       {/* Reservas del día */}
@@ -121,6 +170,11 @@ export default function ValidarPage() {
           Reservas esperadas hoy
         </div>
         <div className="bg-white rounded-2xl border border-zinc-100 overflow-hidden">
+          {reservasHoy.length === 0 && (
+            <div className="p-6 text-center text-sm text-zinc-500">
+              No hay reservas confirmadas pendientes para hoy.
+            </div>
+          )}
           {reservasHoy.map((r) => {
             const servicio = obtenerServicioDemo(r.servicioId)
             const fecha = new Date(r.fecha)
@@ -149,11 +203,21 @@ export default function ValidarPage() {
   )
 }
 
-function TarjetaResultado({ reserva, onCerrar }) {
+function TarjetaResultado({ reserva, onCerrar, onConfirmar }) {
   const servicio = obtenerServicioDemo(reserva.servicioId)
   const empleado = obtenerEmpleadoDemo(reserva.empleadoId)
   const fecha = new Date(reserva.fecha)
-  const [confirmado, setConfirmado] = useState(false)
+  const [confirmado, setConfirmado] = useState(reserva.estado === 'completada')
+  const [guardando, setGuardando] = useState(false)
+  const [error, setError] = useState(null)
+
+  const confirmar = async () => {
+    setGuardando(true)
+    const { error: err } = await onConfirmar(reserva.id)
+    setGuardando(false)
+    if (err) { setError(err); return }
+    setConfirmado(true)
+  }
 
   return (
     <div className="mt-5 bg-acento-500 text-white rounded-3xl p-6 shadow-flotante animate-slide-up">
@@ -168,7 +232,7 @@ function TarjetaResultado({ reserva, onCerrar }) {
 
       <div className="mt-3 font-mono text-lg font-semibold">{reserva.codigo}</div>
       <h3 className="mt-3 text-2xl font-semibold">{reserva.cliente.nombre}</h3>
-      <p className="text-emerald-100 text-sm">{servicio?.nombre} · {empleado?.nombre.split(' ')[0]}</p>
+      <p className="text-emerald-100 text-sm">{servicio?.nombre}{empleado ? ` · ${empleado.nombre.split(' ')[0]}` : ''}</p>
 
       <div className="mt-5 grid grid-cols-3 gap-2 text-xs">
         <div className="bg-white/10 rounded-xl p-3">
@@ -185,13 +249,17 @@ function TarjetaResultado({ reserva, onCerrar }) {
         </div>
       </div>
 
+      {error && (
+        <div className="mt-4 bg-white/15 rounded-xl px-3 py-2 text-xs">No se pudo confirmar: {error}</div>
+      )}
+
       <button
-        onClick={() => setConfirmado(true)}
-        disabled={confirmado}
+        onClick={confirmar}
+        disabled={confirmado || guardando}
         className="mt-5 w-full bg-white text-acento-600 hover:bg-emerald-50 disabled:bg-emerald-100 font-semibold py-3 rounded-full transition flex items-center justify-center gap-2"
       >
         <Check className="w-5 h-5" strokeWidth={3} />
-        {confirmado ? 'Cliente confirmado' : 'Confirmar entrada'}
+        {confirmado ? 'Cliente confirmado' : guardando ? 'Confirmando…' : 'Confirmar entrada'}
       </button>
     </div>
   )
