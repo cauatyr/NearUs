@@ -30,7 +30,7 @@ export default function AgendaPage() {
         r.estado !== 'cancelada'
       )
     }).sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
-  }, [fecha, empleadoSel])
+  }, [RESERVAS_DEMO, fecha, empleadoSel])
 
   const totalHoy = reservasDelDia.reduce((s, r) => s + r.precio, 0)
 

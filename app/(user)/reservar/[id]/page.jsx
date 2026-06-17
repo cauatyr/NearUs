@@ -7,6 +7,7 @@ import {
 } from '@/lib/data/negocios'
 import { useReservas } from '@/lib/store'
 import { useCliente } from '@/lib/store-cliente'
+import { useDatosStore } from '@/lib/store-datos'
 import { formatoUSD, formatoDuracion, siguientesDias, generarHorarios, diasSemanaCorto } from '@/lib/utils'
 
 export default function ReservarPage() {
@@ -25,6 +26,7 @@ export default function ReservarPage() {
 
   const { crearReserva } = useReservas()
   const cliente = useCliente((s) => s.cliente)
+  const crearReservaPublica = useDatosStore((s) => s.crearReservaPublica)
 
   const dias = siguientesDias(14)
   const horarios = generarHorarios(9, 19, 30)
@@ -43,7 +45,8 @@ export default function ReservarPage() {
     const [hh, mm] = hora.split(':').map(Number)
     const inicio = new Date(fecha)
     inicio.setHours(hh, mm, 0, 0)
-    setTimeout(() => {
+    setTimeout(async () => {
+      // Copia local — para "Mis reservas" y la pantalla de confirmación del cliente.
       const reserva = crearReserva({
         negocioId: negocio.id,
         servicioId: servicio.id,
@@ -56,6 +59,20 @@ export default function ReservarPage() {
         cliente: { nombre: cliente.nombre, celular: cliente.celular },
         modo: 'agendada'
       })
+      // Copia en Supabase — para que aparezca en la agenda del negocio (cualquier dispositivo).
+      const { error } = await crearReservaPublica({
+        id: reserva.id,
+        codigo: reserva.codigo,
+        negocioId: negocio.id,
+        servicioId: servicio.id,
+        empleadoId: empleado === 'cualquiera' ? null : empleado,
+        fecha: inicio.toISOString(),
+        duracion: servicio.duracion,
+        precio: servicio.precio,
+        metodoPago: pago,
+        cliente: { nombre: cliente.nombre, celular: cliente.celular }
+      })
+      if (error) console.warn('No se pudo guardar la reserva en el negocio:', error)
       router.push(`/confirmacion/${reserva.id}`)
     }, 600)
   }
