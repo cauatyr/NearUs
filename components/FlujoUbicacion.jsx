@@ -56,7 +56,7 @@ export default function FlujoUbicacion() {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-white rounded-3xl shadow-flotante overflow-hidden">
+      <div className="w-full max-w-sm bg-nocturno-500 rounded-3xl shadow-flotante overflow-hidden">
         {estado === 'pidiendo' ? (
           <Pidiendo />
         ) : mostrarSelector ? (
@@ -78,11 +78,11 @@ export default function FlujoUbicacion() {
 function SoftPrompt({ onPermitir, onManual }) {
   return (
     <div className="p-6 text-center">
-      <div className="w-16 h-16 mx-auto rounded-2xl bg-marca-50 grid place-items-center text-marca-500">
+      <div className="w-16 h-16 mx-auto rounded-2xl bg-marca-500/10 grid place-items-center text-marca-500">
         <Navigation className="w-8 h-8" />
       </div>
-      <h2 className="mt-4 text-xl font-bold text-black">¿Dónde te mostramos?</h2>
-      <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
+      <h2 className="mt-4 text-xl font-bold text-white">¿Dónde te mostramos?</h2>
+      <p className="mt-2 text-sm text-zinc-300 leading-relaxed">
         NearUs usa tu ubicación para abrir el mapa en tu ciudad y mostrarte los
         negocios cerca de ti. No la compartimos con nadie.
       </p>
@@ -95,7 +95,7 @@ function SoftPrompt({ onPermitir, onManual }) {
       </button>
       <button
         onClick={onManual}
-        className="mt-2 w-full text-zinc-600 hover:text-black font-medium py-3 rounded-2xl transition text-sm"
+        className="mt-2 w-full text-zinc-300 hover:text-white font-medium py-3 rounded-2xl transition text-sm"
       >
         Elegir mi ciudad a mano
       </button>
@@ -107,8 +107,8 @@ function Pidiendo() {
   return (
     <div className="p-10 text-center">
       <Loader2 className="w-10 h-10 mx-auto text-marca-500 animate-spin" />
-      <h2 className="mt-4 text-lg font-bold text-black">Buscando tu ubicación…</h2>
-      <p className="mt-1 text-sm text-zinc-500">Acepta el permiso del navegador.</p>
+      <h2 className="mt-4 text-lg font-bold text-white">Buscando tu ubicación…</h2>
+      <p className="mt-1 text-sm text-zinc-400">Acepta el permiso del navegador.</p>
     </div>
   )
 }
@@ -136,13 +136,13 @@ function SelectorCiudad({ motivo, onElegir }) {
 
   return (
     <div className="p-6">
-      <div className="w-14 h-14 mx-auto rounded-2xl bg-marca-50 grid place-items-center text-marca-500">
+      <div className="w-14 h-14 mx-auto rounded-2xl bg-marca-500/10 grid place-items-center text-marca-500">
         <Globe2 className="w-7 h-7" />
       </div>
-      <h2 className="mt-4 text-xl font-bold text-black text-center">
+      <h2 className="mt-4 text-xl font-bold text-white text-center">
         {encabezado.titulo}
       </h2>
-      <p className="mt-2 text-sm text-zinc-600 text-center leading-relaxed">
+      <p className="mt-2 text-sm text-zinc-300 text-center leading-relaxed">
         {encabezado.texto}
       </p>
 
@@ -151,14 +151,14 @@ function SelectorCiudad({ motivo, onElegir }) {
           <button
             key={c.id}
             onClick={() => onElegir(c)}
-            className="w-full flex items-center gap-3 bg-zinc-50 hover:bg-marca-50 border border-zinc-100 hover:border-marca-200 rounded-2xl p-3.5 transition text-left group"
+            className="w-full flex items-center gap-3 bg-white/5 hover:bg-marca-500/10 border border-white/10 hover:border-marca-200 rounded-2xl p-3.5 transition text-left group"
           >
-            <div className="w-10 h-10 rounded-xl bg-white grid place-items-center text-marca-500 shadow-sm shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-nocturno-500 grid place-items-center text-marca-500 shadow-sm shrink-0">
               <MapPin className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-bold text-black leading-tight">{c.nombre}</div>
-              <div className="text-xs text-zinc-500">{c.pais}</div>
+              <div className="font-bold text-white leading-tight">{c.nombre}</div>
+              <div className="text-xs text-zinc-400">{c.pais}</div>
             </div>
             <ChevronRight className="w-5 h-5 text-zinc-300 group-hover:text-marca-500 transition" />
           </button>

@@ -15,9 +15,9 @@ export default function TarjetaNegocio({ negocio, usuario, compacta = false }) {
     return (
       <Link
         href={`/explorar/${negocio.id}`}
-        className="flex items-center gap-3 bg-white rounded-2xl p-3 border border-zinc-100 hover:border-marca-200 transition"
+        className="flex items-center gap-3 bg-nocturno-500 rounded-2xl p-3 border border-white/10 hover:border-marca-200 transition"
       >
-        <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 shrink-0">
+        <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white/10 shrink-0">
           <Image
             src={negocio.imagen}
             alt={negocio.nombre}
@@ -32,13 +32,13 @@ export default function TarjetaNegocio({ negocio, usuario, compacta = false }) {
               {categoria?.nombre}
             </span>
             {negocio.aceptaAhora && (
-              <span className="bg-amber-100 text-amber-800 text-[9px] font-semibold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+              <span className="bg-amber-500/15 text-amber-800 text-[9px] font-semibold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
                 <Zap className="w-2.5 h-2.5 fill-amber-700" /> ahora
               </span>
             )}
           </div>
-          <div className="font-medium text-sm text-zinc-900 truncate">{negocio.nombre}</div>
-          <div className="flex items-center gap-2 text-xs text-zinc-500">
+          <div className="font-medium text-sm text-white truncate">{negocio.nombre}</div>
+          <div className="flex items-center gap-2 text-xs text-zinc-400">
             <span className="flex items-center gap-0.5">
               <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
               {negocio.rating}
@@ -60,9 +60,9 @@ export default function TarjetaNegocio({ negocio, usuario, compacta = false }) {
   return (
     <Link
       href={`/explorar/${negocio.id}`}
-      className="block bg-white rounded-2xl border border-zinc-100 hover:border-marca-200 hover:shadow-suave overflow-hidden transition"
+      className="block bg-nocturno-500 rounded-2xl border border-white/10 hover:border-marca-200 hover:shadow-suave overflow-hidden transition"
     >
-      <div className="relative h-32 bg-zinc-100">
+      <div className="relative h-32 bg-white/10">
         <Image
           src={negocio.imagen}
           alt={negocio.nombre}
@@ -84,14 +84,14 @@ export default function TarjetaNegocio({ negocio, usuario, compacta = false }) {
           >
             {categoria?.nombre}
           </span>
-          <span className="text-xs flex items-center gap-0.5 text-zinc-700">
+          <span className="text-xs flex items-center gap-0.5 text-zinc-200">
             <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
             <strong>{negocio.rating}</strong>
             <span className="text-zinc-400">({negocio.reviews})</span>
           </span>
         </div>
-        <h3 className="mt-1 font-semibold text-zinc-900 leading-snug">{negocio.nombre}</h3>
-        <div className="mt-1.5 text-xs text-zinc-500 flex items-center gap-1">
+        <h3 className="mt-1 font-semibold text-white leading-snug">{negocio.nombre}</h3>
+        <div className="mt-1.5 text-xs text-zinc-400 flex items-center gap-1">
           <MapPin className="w-3 h-3" />
           {negocio.barrio}
           {distancia && <span> · {formatoDistancia(distancia)}</span>}

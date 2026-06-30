@@ -9,13 +9,13 @@ export default function Error({ error, reset }) {
   }, [error])
 
   return (
-    <div className="min-h-screen grid place-items-center p-6 bg-zinc-50">
-      <div className="max-w-md w-full bg-white rounded-3xl border border-zinc-100 p-8 text-center shadow-suave">
-        <div className="w-16 h-16 mx-auto bg-red-50 rounded-full grid place-items-center text-red-500">
+    <div className="min-h-screen grid place-items-center p-6 bg-white/5">
+      <div className="max-w-md w-full bg-nocturno-500 rounded-3xl border border-white/10 p-8 text-center shadow-suave">
+        <div className="w-16 h-16 mx-auto bg-red-500/10 rounded-full grid place-items-center text-red-500">
           <AlertTriangle className="w-8 h-8" />
         </div>
-        <h1 className="mt-5 text-xl font-semibold text-zinc-900">Algo salió mal</h1>
-        <p className="mt-2 text-sm text-zinc-500">
+        <h1 className="mt-5 text-xl font-semibold text-white">Algo salió mal</h1>
+        <p className="mt-2 text-sm text-zinc-400">
           Hubo un error inesperado al cargar esta página. Puedes intentar nuevamente o volver al inicio.
         </p>
 
@@ -35,7 +35,7 @@ export default function Error({ error, reset }) {
           </button>
           <Link
             href="/"
-            className="bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-700 font-medium px-4 py-2.5 rounded-full flex items-center justify-center gap-1.5"
+            className="bg-nocturno-500 border border-white/10 hover:bg-white/5 text-zinc-200 font-medium px-4 py-2.5 rounded-full flex items-center justify-center gap-1.5"
           >
             <Home className="w-4 h-4" /> Inicio
           </Link>

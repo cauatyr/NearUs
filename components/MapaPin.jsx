@@ -61,8 +61,8 @@ export default function MapaPin({ lat, lng, onCambio }) {
         className="h-64 w-full rounded-2xl overflow-hidden z-0"
       >
         <TileLayer
-          attribution='&copy; OpenStreetMap'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; OpenStreetMap, &copy; CARTO'
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
         <ClickHandler onCambio={onCambio} />
         <SeguirPin lat={lat} lng={lng} />
@@ -79,7 +79,7 @@ export default function MapaPin({ lat, lng, onCambio }) {
           }}
         />
       </MapContainer>
-      <p className="mt-2 text-xs text-zinc-500 text-center">
+      <p className="mt-2 text-xs text-zinc-400 text-center">
         Toca el mapa o arrastra el pin para marcar tu ubicación
       </p>
     </div>

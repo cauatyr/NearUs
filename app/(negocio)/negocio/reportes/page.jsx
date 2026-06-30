@@ -86,16 +86,16 @@ export default function ReportesPage() {
     <div className="p-5 md:p-8 max-w-6xl">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900">Reportes</h1>
-          <p className="text-sm text-zinc-500">Métricas y desempeño del negocio</p>
+          <h1 className="text-2xl font-semibold text-white">Reportes</h1>
+          <p className="text-sm text-zinc-400">Métricas y desempeño del negocio</p>
         </div>
-        <div className="flex bg-zinc-100 rounded-full p-1">
+        <div className="flex bg-white/10 rounded-full p-1">
           {PERIODOS.map((p) => (
             <button
               key={p.id}
               onClick={() => setPeriodo(p.id)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition ${
-                periodo === p.id ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
+                periodo === p.id ? 'bg-nocturno-500 text-white shadow-sm' : 'text-zinc-400'
               }`}
             >
               {p.label}
@@ -145,19 +145,19 @@ export default function ReportesPage() {
 
       <div className="mt-6 grid lg:grid-cols-2 gap-5">
         {/* Reservas por día */}
-        <div className="bg-white rounded-2xl border border-zinc-100 p-5">
-          <div className="text-sm font-semibold text-zinc-900">Reservas por día de la semana</div>
+        <div className="bg-nocturno-500 rounded-2xl border border-white/10 p-5">
+          <div className="text-sm font-semibold text-white">Reservas por día de la semana</div>
           <div className="mt-5 flex items-end justify-between gap-2 h-44">
             {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((dia, i) => {
               const alto = (stats.porDia[i] / maxDia) * 100
               return (
                 <div key={dia} className="flex-1 flex flex-col items-center gap-1.5">
-                  <div className="text-[10px] font-semibold text-zinc-600">{stats.porDia[i]}</div>
+                  <div className="text-[10px] font-semibold text-zinc-300">{stats.porDia[i]}</div>
                   <div
                     className="w-full bg-marca-500 rounded-t-lg transition-all"
                     style={{ height: `${Math.max(alto, 4)}%` }}
                   />
-                  <div className="text-[10px] text-zinc-500 font-medium">{dia}</div>
+                  <div className="text-[10px] text-zinc-400 font-medium">{dia}</div>
                 </div>
               )
             })}
@@ -165,11 +165,11 @@ export default function ReportesPage() {
         </div>
 
         {/* Top servicios */}
-        <div className="bg-white rounded-2xl border border-zinc-100 p-5">
-          <div className="text-sm font-semibold text-zinc-900">Servicios más reservados</div>
+        <div className="bg-nocturno-500 rounded-2xl border border-white/10 p-5">
+          <div className="text-sm font-semibold text-white">Servicios más reservados</div>
           <div className="mt-4 space-y-3">
             {stats.topServicios.length === 0 && (
-              <p className="text-sm text-zinc-500">Aún sin datos para este período.</p>
+              <p className="text-sm text-zinc-400">Aún sin datos para este período.</p>
             )}
             {stats.topServicios.map(([nombre, cantidad], i) => {
               const max = stats.topServicios[0][1]
@@ -177,13 +177,13 @@ export default function ReportesPage() {
               return (
                 <div key={nombre}>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-zinc-700 font-medium truncate">
+                    <span className="text-zinc-200 font-medium truncate">
                       <span className="text-zinc-400 font-mono mr-2">#{i + 1}</span>
                       {nombre}
                     </span>
-                    <span className="font-semibold text-zinc-900">{cantidad}</span>
+                    <span className="font-semibold text-white">{cantidad}</span>
                   </div>
-                  <div className="mt-1.5 h-2 bg-zinc-100 rounded-full overflow-hidden">
+                  <div className="mt-1.5 h-2 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-marca-500 rounded-full"
                       style={{ width: `${pct}%` }}
@@ -197,24 +197,24 @@ export default function ReportesPage() {
       </div>
 
       {/* Equipo */}
-      <div className="mt-5 bg-white rounded-2xl border border-zinc-100 p-5">
-        <div className="text-sm font-semibold text-zinc-900">Desempeño del equipo</div>
+      <div className="mt-5 bg-nocturno-500 rounded-2xl border border-white/10 p-5">
+        <div className="text-sm font-semibold text-white">Desempeño del equipo</div>
         <div className="mt-4 grid sm:grid-cols-2 gap-3">
           {Object.entries(stats.porEmpleado).map(([nombre, datos]) => {
             const inicial = nombre.split(' ').map((n) => n[0]).slice(0, 2).join('')
             return (
-              <div key={nombre} className="flex items-center gap-3 bg-zinc-50 rounded-xl p-3.5">
+              <div key={nombre} className="flex items-center gap-3 bg-white/5 rounded-xl p-3.5">
                 <div className="w-10 h-10 rounded-full bg-marca-500 grid place-items-center text-white text-sm font-semibold">
                   {inicial}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm text-zinc-900 truncate">{nombre}</div>
-                  <div className="text-xs text-zinc-500">
+                  <div className="font-medium text-sm text-white truncate">{nombre}</div>
+                  <div className="text-xs text-zinc-400">
                     {datos.reservas} reservas · {formatoUSD(datos.ingresos)}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="flex items-center gap-0.5 text-xs text-zinc-700 font-medium justify-end">
+                  <div className="flex items-center gap-0.5 text-xs text-zinc-200 font-medium justify-end">
                     <Star className="w-3 h-3 fill-amber-500 text-amber-500" /> 4.9
                   </div>
                   <div className="text-[10px] text-zinc-400">promedio</div>
@@ -226,7 +226,7 @@ export default function ReportesPage() {
       </div>
 
       {/* Nota de reportes en evolución */}
-      <div className="mt-5 bg-marca-50 border border-marca-100 rounded-2xl p-4 flex items-start gap-3">
+      <div className="mt-5 bg-marca-500/10 border border-marca-500/20 rounded-2xl p-4 flex items-start gap-3">
         <Clock className="w-5 h-5 text-marca-500 shrink-0 mt-0.5" />
         <div>
           <div className="font-medium text-marca-700 text-sm">Reportes en evolución</div>
@@ -243,12 +243,12 @@ export default function ReportesPage() {
 function KPI({ icono: Icono, color, label, valor, delta }) {
   const fondo = color === 'acento' ? 'bg-acento-500' : 'bg-marca-500'
   return (
-    <div className="bg-white rounded-2xl border border-zinc-100 p-4">
+    <div className="bg-nocturno-500 rounded-2xl border border-white/10 p-4">
       <div className={`w-9 h-9 rounded-xl ${fondo} text-white grid place-items-center`}>
         <Icono className="w-4 h-4" />
       </div>
-      <div className="mt-3 text-2xl font-semibold text-zinc-900">{valor}</div>
-      <div className="text-xs text-zinc-500 mt-0.5">{label}</div>
+      <div className="mt-3 text-2xl font-semibold text-white">{valor}</div>
+      <div className="text-xs text-zinc-400 mt-0.5">{label}</div>
       <div className="text-[10px] text-acento-600 font-medium mt-2">{delta}</div>
     </div>
   )
@@ -287,7 +287,7 @@ function SaldoRetirar({ saldo, bruto, comision }) {
           <button
             onClick={() => setModalAbierto(true)}
             disabled={!puedeRetirar}
-            className="bg-white text-acento-700 hover:bg-emerald-50 disabled:bg-white/40 disabled:text-white/70 disabled:cursor-not-allowed font-bold rounded-full px-5 py-3 flex items-center gap-2 shadow-md transition w-full md:w-auto justify-center"
+            className="bg-nocturno-500 text-acento-700 hover:bg-emerald-50 disabled:bg-white/40 disabled:text-white/70 disabled:cursor-not-allowed font-bold rounded-full px-5 py-3 flex items-center gap-2 shadow-md transition w-full md:w-auto justify-center"
           >
             <ArrowDownToLine className="w-4 h-4" />
             Solicitar retiro
@@ -312,7 +312,7 @@ function Bloque({ label, valor, negativo, destacado }) {
   return (
     <div
       className={`rounded-xl p-2.5 ${
-        destacado ? 'bg-white text-acento-700' : 'bg-white/10 text-white'
+        destacado ? 'bg-nocturno-500 text-acento-700' : 'bg-white/10 text-white'
       }`}
     >
       <div className={`text-[9px] uppercase tracking-wider font-bold ${destacado ? 'text-acento-600' : 'text-emerald-100/80'}`}>
@@ -329,15 +329,15 @@ function ModalRetiro({ saldo, onCerrar }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-3" onClick={onCerrar}>
       <div
-        className="bg-white w-full max-w-md rounded-3xl shadow-flotante overflow-hidden"
+        className="bg-nocturno-500 w-full max-w-md rounded-3xl shadow-flotante overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 text-center">
           <div className="w-14 h-14 mx-auto bg-acento-500 rounded-2xl grid place-items-center">
             <ArrowDownToLine className="w-7 h-7 text-white" />
           </div>
-          <h3 className="mt-4 text-xl font-semibold text-zinc-900">Retiros próximamente</h3>
-          <p className="mt-2 text-sm text-zinc-600">
+          <h3 className="mt-4 text-xl font-semibold text-white">Retiros próximamente</h3>
+          <p className="mt-2 text-sm text-zinc-300">
             Vamos a habilitar el retiro a tu cuenta bancaria cuando NearUs salga oficialmente.
             Tu saldo actual disponible es de <strong>{formatoUSD(saldo)}</strong>.
           </p>

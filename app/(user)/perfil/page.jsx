@@ -8,6 +8,7 @@ import { useDatosStore } from '@/lib/store-datos'
 import { obtenerNegocio, obtenerServicio, useNegocios } from '@/lib/data/negocios'
 import { formatoUSD, mesCorto, diasSemanaCorto } from '@/lib/utils'
 import TarjetaNegocio from '@/components/TarjetaNegocio'
+import Billetera from '@/components/Billetera'
 import { useUbicacion } from '@/lib/store'
 
 export default function PerfilPage() {
@@ -75,16 +76,19 @@ export default function PerfilPage() {
 
       {/* Stats */}
       <div className="px-5 -mt-6">
-        <div className="bg-white rounded-2xl border border-zinc-100 shadow-suave grid grid-cols-3 divide-x divide-zinc-100">
+        <div className="bg-nocturno-500 rounded-2xl border border-white/10 shadow-suave grid grid-cols-3 divide-x divide-white/10">
           <Stat valor={reservas.length} label="Reservas" />
           <Stat valor={favoritos.length} label="Favoritos" />
           <Stat valor={pasadas.length} label="Visitas" />
         </div>
       </div>
 
+      {/* Billetera (saldo + recarga + movimientos) */}
+      <Billetera />
+
       {/* Tabs */}
       <div className="px-5 mt-7">
-        <div className="bg-zinc-100 rounded-full p-1 grid grid-cols-2 gap-1">
+        <div className="bg-white/10 rounded-full p-1 grid grid-cols-2 gap-1">
           <TabBtn activo={tab === 'reservas'} onClick={() => setTab('reservas')}>
             Reservas
           </TabBtn>
@@ -152,8 +156,8 @@ export default function PerfilPage() {
 function Stat({ valor, label }) {
   return (
     <div className="text-center p-4">
-      <div className="text-2xl font-semibold text-zinc-900">{valor}</div>
-      <div className="text-[11px] text-zinc-500 mt-0.5">{label}</div>
+      <div className="text-2xl font-semibold text-white">{valor}</div>
+      <div className="text-[11px] text-zinc-400 mt-0.5">{label}</div>
     </div>
   )
 }
@@ -163,7 +167,7 @@ function TabBtn({ activo, onClick, children }) {
     <button
       onClick={onClick}
       className={`py-2 rounded-full text-sm font-medium transition ${
-        activo ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
+        activo ? 'bg-nocturno-500 text-white shadow-sm' : 'text-zinc-400'
       }`}
     >
       {children}
@@ -172,7 +176,7 @@ function TabBtn({ activo, onClick, children }) {
 }
 
 function SubTitulo({ children }) {
-  return <div className="text-[11px] uppercase tracking-wide text-zinc-500 font-medium pt-1">{children}</div>
+  return <div className="text-[11px] uppercase tracking-wide text-zinc-400 font-medium pt-1">{children}</div>
 }
 
 function ItemReserva({ reserva }) {
@@ -183,9 +187,9 @@ function ItemReserva({ reserva }) {
     reserva.hora ||
     `${String(fecha.getHours()).padStart(2, '0')}:${String(fecha.getMinutes()).padStart(2, '0')}`
   const colorEstado = {
-    confirmada: 'bg-marca-100 text-marca-700',
+    confirmada: 'bg-marca-500/15 text-marca-700',
     completada: 'bg-acento-500 text-white',
-    cancelada: 'bg-zinc-200 text-zinc-600'
+    cancelada: 'bg-white/10 text-zinc-300'
   }[reserva.estado]
   const textoEstado = {
     confirmada: 'Confirmada',
@@ -196,22 +200,22 @@ function ItemReserva({ reserva }) {
   return (
     <Link
       href={`/confirmacion/${reserva.id}`}
-      className="flex items-center gap-3 bg-white rounded-2xl p-3 border border-zinc-100 hover:border-marca-200"
+      className="flex items-center gap-3 bg-nocturno-500 rounded-2xl p-3 border border-white/10 hover:border-marca-200"
     >
-      <div className="w-14 h-14 rounded-xl bg-marca-100 grid place-items-center text-marca-600 font-semibold text-lg shrink-0">
+      <div className="w-14 h-14 rounded-xl bg-marca-500/15 grid place-items-center text-marca-600 font-semibold text-lg shrink-0">
         {fecha.getDate()}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-wide text-zinc-500 font-medium">
+          <span className="text-[10px] uppercase tracking-wide text-zinc-400 font-medium">
             {diasSemanaCorto(fecha)} {mesCorto(fecha)} · {hora}
           </span>
           <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${colorEstado}`}>
             {textoEstado}
           </span>
         </div>
-        <div className="font-medium text-sm text-zinc-900 truncate">{servicio?.nombre}</div>
-        <div className="text-xs text-zinc-500 truncate">{negocio?.nombre}</div>
+        <div className="font-medium text-sm text-white truncate">{servicio?.nombre}</div>
+        <div className="text-xs text-zinc-400 truncate">{negocio?.nombre}</div>
       </div>
       <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
     </Link>
@@ -221,11 +225,11 @@ function ItemReserva({ reserva }) {
 function EstadoVacio({ icono: Icono, titulo, texto, accion }) {
   return (
     <div className="text-center py-10 px-5">
-      <div className="w-14 h-14 mx-auto bg-zinc-100 rounded-full grid place-items-center text-zinc-400">
+      <div className="w-14 h-14 mx-auto bg-white/10 rounded-full grid place-items-center text-zinc-400">
         <Icono className="w-6 h-6" />
       </div>
-      <h3 className="mt-4 font-semibold text-zinc-900">{titulo}</h3>
-      <p className="mt-1 text-sm text-zinc-500 max-w-xs mx-auto">{texto}</p>
+      <h3 className="mt-4 font-semibold text-white">{titulo}</h3>
+      <p className="mt-1 text-sm text-zinc-400 max-w-xs mx-auto">{texto}</p>
       {accion && (
         <Link
           href={accion.href}

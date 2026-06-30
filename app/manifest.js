@@ -42,9 +42,9 @@ export default function manifest() {
         icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml' }]
       },
       {
-        name: 'Necesito ahora',
-        short_name: 'Ahora',
-        description: 'Atención inmediata',
+        name: 'Near you',
+        short_name: 'Near you',
+        description: 'Atención inmediata cerca de ti',
         url: '/ahora',
         icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml' }]
       }

@@ -91,13 +91,13 @@ export default function ValidarPage() {
 
   return (
     <div className="p-5 md:p-8 max-w-3xl">
-      <h1 className="text-2xl font-semibold text-zinc-900">Check-in con QR</h1>
-      <p className="text-sm text-zinc-500">
+      <h1 className="text-2xl font-semibold text-white">Check-in con QR</h1>
+      <p className="text-sm text-zinc-400">
         Escanea el QR del cliente o introduce el código manualmente
       </p>
 
       {/* Scanner area */}
-      <div className="mt-7 bg-white rounded-3xl border border-zinc-100 p-5">
+      <div className="mt-7 bg-nocturno-500 rounded-3xl border border-white/10 p-5">
         <div className="aspect-square max-w-xs mx-auto bg-zinc-900 rounded-2xl relative overflow-hidden">
           <div id={QR_REGION_ID} className={escaneando ? 'w-full h-full' : 'hidden'} />
           {!escaneando && (
@@ -127,7 +127,7 @@ export default function ValidarPage() {
         )}
 
         {errorCam && (
-          <div className="mt-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-2 text-sm text-red-700">
+          <div className="mt-3 bg-red-500/10 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-2 text-sm text-red-700">
             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
             <div className="text-xs">{errorCam}</div>
           </div>
@@ -135,14 +135,14 @@ export default function ValidarPage() {
       </div>
 
       {/* O ingresar código */}
-      <div className="mt-5 bg-white rounded-2xl border border-zinc-100 p-4">
-        <div className="text-xs font-medium text-zinc-700 mb-2">O ingresa el código manualmente</div>
+      <div className="mt-5 bg-nocturno-500 rounded-2xl border border-white/10 p-4">
+        <div className="text-xs font-medium text-zinc-200 mb-2">O ingresa el código manualmente</div>
         <div className="flex gap-2">
           <input
             value={codigoBusqueda}
             onChange={(e) => setCodigoBusqueda(e.target.value)}
             placeholder="Ej. NU-A4D1X"
-            className="flex-1 bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm font-mono uppercase focus:outline-none focus:border-marca-500 focus:bg-white"
+            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm font-mono uppercase focus:outline-none focus:border-marca-500 focus:bg-nocturno-400"
             onKeyDown={(e) => e.key === 'Enter' && buscar()}
           />
           <button
@@ -166,12 +166,12 @@ export default function ValidarPage() {
 
       {/* Reservas del día */}
       <div className="mt-7">
-        <div className="text-xs font-medium uppercase tracking-wider text-zinc-500 mb-3">
+        <div className="text-xs font-medium uppercase tracking-wider text-zinc-400 mb-3">
           Reservas esperadas hoy
         </div>
-        <div className="bg-white rounded-2xl border border-zinc-100 overflow-hidden">
+        <div className="bg-nocturno-500 rounded-2xl border border-white/10 overflow-hidden">
           {reservasHoy.length === 0 && (
-            <div className="p-6 text-center text-sm text-zinc-500">
+            <div className="p-6 text-center text-sm text-zinc-400">
               No hay reservas confirmadas pendientes para hoy.
             </div>
           )}
@@ -182,15 +182,15 @@ export default function ValidarPage() {
               <button
                 key={r.id}
                 onClick={() => setResultado(r)}
-                className="w-full flex items-center justify-between gap-3 p-4 border-b border-zinc-50 last:border-b-0 hover:bg-zinc-50 transition text-left"
+                className="w-full flex items-center justify-between gap-3 p-4 border-b border-zinc-50 last:border-b-0 hover:bg-white/5 transition text-left"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-marca-100 grid place-items-center text-marca-600 font-semibold text-sm">
+                  <div className="w-11 h-11 rounded-full bg-marca-500/15 grid place-items-center text-marca-600 font-semibold text-sm">
                     {String(fecha.getHours()).padStart(2, '0')}{String(fecha.getMinutes()).padStart(2, '0')}
                   </div>
                   <div className="min-w-0">
-                    <div className="font-medium text-sm text-zinc-900 truncate">{r.cliente.nombre}</div>
-                    <div className="text-xs text-zinc-500 truncate">{servicio?.nombre}</div>
+                    <div className="font-medium text-sm text-white truncate">{r.cliente.nombre}</div>
+                    <div className="text-xs text-zinc-400 truncate">{servicio?.nombre}</div>
                   </div>
                 </div>
                 <div className="font-mono text-xs text-zinc-400">{r.codigo}</div>
@@ -256,7 +256,7 @@ function TarjetaResultado({ reserva, onCerrar, onConfirmar }) {
       <button
         onClick={confirmar}
         disabled={confirmado || guardando}
-        className="mt-5 w-full bg-white text-acento-600 hover:bg-emerald-50 disabled:bg-emerald-100 font-semibold py-3 rounded-full transition flex items-center justify-center gap-2"
+        className="mt-5 w-full bg-nocturno-500 text-acento-600 hover:bg-emerald-50 disabled:bg-emerald-100 font-semibold py-3 rounded-full transition flex items-center justify-center gap-2"
       >
         <Check className="w-5 h-5" strokeWidth={3} />
         {confirmado ? 'Cliente confirmado' : guardando ? 'Confirmando…' : 'Confirmar entrada'}
@@ -267,7 +267,7 @@ function TarjetaResultado({ reserva, onCerrar, onConfirmar }) {
 
 function TarjetaError({ codigo, onCerrar }) {
   return (
-    <div className="mt-5 bg-red-50 border border-red-200 rounded-3xl p-5 animate-slide-up">
+    <div className="mt-5 bg-red-500/10 border border-red-200 rounded-3xl p-5 animate-slide-up">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-red-700 font-semibold">
           <AlertCircle className="w-5 h-5" /> Código no válido

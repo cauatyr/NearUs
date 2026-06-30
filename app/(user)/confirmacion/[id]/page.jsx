@@ -20,7 +20,7 @@ export default function ConfirmacionPage() {
   if (!reserva) {
     return (
       <div className="p-8 text-center">
-        <p className="text-zinc-500">Reserva no encontrada.</p>
+        <p className="text-zinc-400">Reserva no encontrada.</p>
         <Link href="/explorar" className="text-marca-500 mt-3 inline-block">
           Volver al inicio
         </Link>
@@ -37,7 +37,7 @@ export default function ConfirmacionPage() {
   const cancelada = reserva.estado === 'cancelada'
 
   return (
-    <div className="pb-32 bg-zinc-50">
+    <div className="pb-32 bg-white/5">
       {/* Hero confirmación */}
       <div className={`px-5 pt-10 pb-8 text-center text-white ${cancelada ? 'bg-zinc-600' : 'bg-marca-500'}`}>
         <div className="w-16 h-16 mx-auto bg-white/20 rounded-full grid place-items-center backdrop-blur">
@@ -58,12 +58,12 @@ export default function ConfirmacionPage() {
       {/* QR */}
       {!cancelada && (
         <div className="px-5 -mt-5">
-          <div className="bg-white rounded-3xl p-6 shadow-suave border border-zinc-100">
+          <div className="bg-nocturno-500 rounded-3xl p-6 shadow-suave border border-white/10">
             <div className="text-center">
-              <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
+              <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium">
                 Código de check-in
               </div>
-              <div className="mt-4 inline-block p-3 bg-white border-2 border-zinc-200 rounded-2xl">
+              <div className="mt-4 inline-block p-3 bg-nocturno-500 border-2 border-white/10 rounded-2xl">
                 <QRCodeSVG
                   value={`nearus://reserva/${reserva.codigo}`}
                   size={160}
@@ -72,10 +72,10 @@ export default function ConfirmacionPage() {
                   level="M"
                 />
               </div>
-              <div className="mt-4 font-mono font-semibold text-lg tracking-wider text-zinc-900">
+              <div className="mt-4 font-mono font-semibold text-lg tracking-wider text-white">
                 {reserva.codigo}
               </div>
-              <div className="text-xs text-zinc-500 mt-1">
+              <div className="text-xs text-zinc-400 mt-1">
                 Muéstralo al llegar al negocio
               </div>
             </div>
@@ -85,16 +85,16 @@ export default function ConfirmacionPage() {
 
       {/* Detalles */}
       <div className="px-5 mt-4">
-        <div className="bg-white rounded-3xl border border-zinc-100 overflow-hidden">
-          <div className="p-5 border-b border-zinc-100">
-            <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">Servicio</div>
-            <div className="mt-1 font-semibold text-zinc-900">{servicio.nombre}</div>
-            <div className="text-sm text-zinc-500">{negocio.nombre}</div>
+        <div className="bg-nocturno-500 rounded-3xl border border-white/10 overflow-hidden">
+          <div className="p-5 border-b border-white/10">
+            <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium">Servicio</div>
+            <div className="mt-1 font-semibold text-white">{servicio.nombre}</div>
+            <div className="text-sm text-zinc-400">{negocio.nombre}</div>
             <div className="mt-3 flex items-center justify-between text-sm">
-              <span className="text-zinc-500 flex items-center gap-1">
+              <span className="text-zinc-400 flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" /> {formatoDuracion(servicio.duracion)}
               </span>
-              <span className="font-semibold text-zinc-900">{formatoUSD(servicio.precio)}</span>
+              <span className="font-semibold text-white">{formatoUSD(servicio.precio)}</span>
             </div>
           </div>
 
@@ -104,7 +104,7 @@ export default function ConfirmacionPage() {
 
           <Detalle icono={MapPin} titulo="Dirección">
             <div>{negocio.direccion}</div>
-            <div className="text-zinc-500">{negocio.barrio} · Cuenca</div>
+            <div className="text-zinc-400">{negocio.barrio} · Cuenca</div>
           </Detalle>
 
           <Detalle icono={Phone} titulo="Contacto del negocio">
@@ -117,7 +117,7 @@ export default function ConfirmacionPage() {
           <div className="mt-4 grid grid-cols-2 gap-2">
             <button
               onClick={() => navigator.share?.({ title: 'Mi reserva NearUs', text: reserva.codigo })}
-              className="bg-white border border-zinc-200 rounded-2xl py-3 text-sm font-medium text-zinc-700 flex items-center justify-center gap-2 hover:bg-zinc-50"
+              className="bg-nocturno-500 border border-white/10 rounded-2xl py-3 text-sm font-medium text-zinc-200 flex items-center justify-center gap-2 hover:bg-white/5"
             >
               <Share2 className="w-4 h-4" /> Compartir
             </button>
@@ -128,7 +128,7 @@ export default function ConfirmacionPage() {
                   actualizarReserva(reserva.id, { estado: 'cancelada' })
                 }
               }}
-              className="bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded-2xl py-3 text-sm font-medium flex items-center justify-center gap-2"
+              className="bg-nocturno-500 border border-red-200 text-red-600 hover:bg-red-500/10 rounded-2xl py-3 text-sm font-medium flex items-center justify-center gap-2"
             >
               <X className="w-4 h-4" /> Cancelar
             </button>
@@ -148,13 +148,13 @@ export default function ConfirmacionPage() {
 
 function Detalle({ icono: Icono, titulo, children }) {
   return (
-    <div className="p-5 border-b border-zinc-100 last:border-b-0 flex items-start gap-3">
-      <div className="w-9 h-9 rounded-full bg-marca-50 grid place-items-center shrink-0">
+    <div className="p-5 border-b border-white/10 last:border-b-0 flex items-start gap-3">
+      <div className="w-9 h-9 rounded-full bg-marca-500/10 grid place-items-center shrink-0">
         <Icono className="w-4 h-4 text-marca-500" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">{titulo}</div>
-        <div className="mt-0.5 text-sm text-zinc-900">{children}</div>
+        <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium">{titulo}</div>
+        <div className="mt-0.5 text-sm text-white">{children}</div>
       </div>
     </div>
   )

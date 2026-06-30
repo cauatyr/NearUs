@@ -91,25 +91,25 @@ export default function ReservarPage() {
 
   return (
     <div className="pb-32">
-      <header className="sticky top-0 z-20 bg-white border-b border-zinc-100">
+      <header className="sticky top-0 z-20 bg-nocturno-500 border-b border-white/10">
         <div className="h-14 px-4 flex items-center gap-3">
-          <button onClick={() => router.back()} className="w-9 h-9 grid place-items-center rounded-full hover:bg-zinc-100">
-            <ArrowLeft className="w-5 h-5 text-zinc-900" />
+          <button onClick={() => router.back()} className="w-9 h-9 grid place-items-center rounded-full hover:bg-white/10">
+            <ArrowLeft className="w-5 h-5 text-white" />
           </button>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Reservar</div>
-            <div className="text-sm font-medium text-zinc-900 truncate">{negocio.nombre}</div>
+            <div className="text-[10px] text-zinc-400 uppercase tracking-wide">Reservar</div>
+            <div className="text-sm font-medium text-white truncate">{negocio.nombre}</div>
           </div>
         </div>
       </header>
 
       {/* Resumen servicio */}
       <div className="px-5 pt-5">
-        <div className="bg-marca-50 border border-marca-100 rounded-2xl p-4">
+        <div className="bg-marca-500/10 border border-marca-500/20 rounded-2xl p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="font-semibold text-zinc-900">{servicio.nombre}</div>
-              <div className="mt-1 text-xs text-zinc-600 flex items-center gap-1">
+              <div className="font-semibold text-white">{servicio.nombre}</div>
+              <div className="mt-1 text-xs text-zinc-300 flex items-center gap-1">
                 <Clock className="w-3 h-3" /> {formatoDuracion(servicio.duracion)}
               </div>
             </div>
@@ -155,7 +155,7 @@ export default function ReservarPage() {
                 className={`shrink-0 w-14 py-2.5 rounded-2xl border-2 transition flex flex-col items-center ${
                   sel
                     ? 'border-marca-500 bg-marca-500 text-white'
-                    : 'border-zinc-200 hover:border-zinc-300 text-zinc-700'
+                    : 'border-white/10 hover:border-white/20 text-zinc-200'
                 }`}
               >
                 <span className="text-[10px] uppercase tracking-wide font-medium">
@@ -178,7 +178,7 @@ export default function ReservarPage() {
               className={`py-2.5 rounded-xl text-sm font-medium border-2 transition ${
                 hora === h
                   ? 'border-marca-500 bg-marca-500 text-white'
-                  : 'border-zinc-200 hover:border-zinc-300 text-zinc-700'
+                  : 'border-white/10 hover:border-white/20 text-zinc-200'
               }`}
             >
               {h}
@@ -209,13 +209,13 @@ export default function ReservarPage() {
 
       {/* CTA */}
       <div
-        className="fixed bottom-16 left-0 right-0 z-20 max-w-md mx-auto px-4 pt-3 pb-3 bg-white border-t border-zinc-100"
+        className="fixed bottom-16 left-0 right-0 z-20 max-w-md mx-auto px-4 pt-3 pb-3 bg-nocturno-500 border-t border-white/10"
         style={{ paddingBottom: 'calc(0.75rem + var(--safe-bottom))' }}
       >
         <button
           disabled={!hora || confirmando}
           onClick={confirmar}
-          className="w-full bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-semibold py-3.5 rounded-full transition flex items-center justify-center gap-2"
+          className="w-full bg-marca-500 hover:bg-marca-600 disabled:bg-white/10 disabled:text-zinc-400 text-white font-semibold py-3.5 rounded-full transition flex items-center justify-center gap-2"
         >
           {confirmando ? (
             <>
@@ -244,7 +244,7 @@ export default function ReservarPage() {
 function Section({ titulo, children }) {
   return (
     <div className="mt-7 px-5">
-      <h3 className="text-sm font-semibold text-zinc-900 mb-3">{titulo}</h3>
+      <h3 className="text-sm font-semibold text-white mb-3">{titulo}</h3>
       {children}
     </div>
   )
@@ -256,18 +256,18 @@ function ChipPersona({ activo, onClick, avatar, nombre, cargo }) {
       onClick={onClick}
       className={`shrink-0 px-3 py-2.5 rounded-2xl border-2 transition flex items-center gap-2.5 ${
         activo
-          ? 'border-marca-500 bg-marca-50'
-          : 'border-zinc-200 hover:border-zinc-300 bg-white'
+          ? 'border-marca-500 bg-marca-500/10'
+          : 'border-white/10 hover:border-white/20 bg-nocturno-500'
       }`}
     >
       <div className={`w-9 h-9 rounded-full grid place-items-center text-xs font-semibold ${
-        activo ? 'bg-marca-500 text-white' : 'bg-zinc-100 text-zinc-600'
+        activo ? 'bg-marca-500 text-white' : 'bg-white/10 text-zinc-300'
       }`}>
         {avatar}
       </div>
       <div className="text-left">
-        <div className={`text-sm font-medium ${activo ? 'text-marca-700' : 'text-zinc-900'}`}>{nombre}</div>
-        <div className="text-[10px] text-zinc-500">{cargo}</div>
+        <div className={`text-sm font-medium ${activo ? 'text-marca-700' : 'text-white'}`}>{nombre}</div>
+        <div className="text-[10px] text-zinc-400">{cargo}</div>
       </div>
     </button>
   )
@@ -279,18 +279,18 @@ function OpcionPago({ activo, onClick, icono: Icono, titulo, descripcion }) {
       onClick={onClick}
       className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 text-left transition ${
         activo
-          ? 'border-marca-500 bg-marca-50'
-          : 'border-zinc-200 hover:border-zinc-300 bg-white'
+          ? 'border-marca-500 bg-marca-500/10'
+          : 'border-white/10 hover:border-white/20 bg-nocturno-500'
       }`}
     >
       <div className={`w-10 h-10 rounded-xl grid place-items-center ${
-        activo ? 'bg-marca-500 text-white' : 'bg-zinc-100 text-zinc-600'
+        activo ? 'bg-marca-500 text-white' : 'bg-white/10 text-zinc-300'
       }`}>
         <Icono className="w-5 h-5" />
       </div>
       <div className="flex-1">
-        <div className={`font-medium text-sm ${activo ? 'text-marca-700' : 'text-zinc-900'}`}>{titulo}</div>
-        <div className="text-xs text-zinc-500 mt-0.5">{descripcion}</div>
+        <div className={`font-medium text-sm ${activo ? 'text-marca-700' : 'text-white'}`}>{titulo}</div>
+        <div className="text-xs text-zinc-400 mt-0.5">{descripcion}</div>
       </div>
       {activo && (
         <div className="w-5 h-5 rounded-full bg-marca-500 grid place-items-center text-white">

@@ -30,41 +30,34 @@ function iconoNegocio(negocio, opciones = {}) {
   const ringColor = destacado ? '#F59E0B' : 'white'
   const ringWidth = destacado ? 3 : 2
 
-  const coronaHTML = destacado
+  // Negocio destacado: un brillo dorado (sparkle) flotando sobre el pin.
+  // Reemplaza a la antigua corona — más amigable, menos "estatus".
+  const brilloHTML = destacado
     ? `
       <div style="
         position:absolute;
-        top:-30px;
+        top:-28px;
         left:50%;
         transform:translateX(-50%);
         z-index:5;
-        filter:drop-shadow(0 4px 8px rgba(245,158,11,0.7)) drop-shadow(0 0 2px rgba(0,0,0,0.4));
+        filter:drop-shadow(0 4px 8px rgba(245,158,11,0.7)) drop-shadow(0 0 2px rgba(0,0,0,0.3));
         animation:flotar 2.4s ease-in-out infinite;
       ">
-        <svg width="38" height="32" viewBox="0 0 40 32" xmlns="http://www.w3.org/2000/svg">
+        <svg width="30" height="30" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="oro-grad-${negocio.id}" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#FCD34D"/>
-              <stop offset="45%" stop-color="#F59E0B"/>
-              <stop offset="100%" stop-color="#B45309"/>
-            </linearGradient>
-            <linearGradient id="oro-brillo-${negocio.id}" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#FEF3C7" stop-opacity="0.9"/>
-              <stop offset="100%" stop-color="#FCD34D" stop-opacity="0"/>
+            <linearGradient id="brillo-grad-${negocio.id}" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#FDE68A"/>
+              <stop offset="50%" stop-color="#F59E0B"/>
+              <stop offset="100%" stop-color="#D97706"/>
             </linearGradient>
           </defs>
-          <path d="M4 26 L6 10 L13 17 L20 5 L27 17 L34 10 L36 26 Z"
-                fill="url(#oro-grad-${negocio.id})"
-                stroke="#92400E"
-                stroke-width="1.5"
+          <path d="M16 2 C17.2 11 21 14.8 30 16 C21 17.2 17.2 21 16 30 C14.8 21 11 17.2 2 16 C11 14.8 14.8 11 16 2 Z"
+                fill="url(#brillo-grad-${negocio.id})"
+                stroke="#B45309"
+                stroke-width="1"
                 stroke-linejoin="round"/>
-          <rect x="4" y="25" width="32" height="4" rx="1.5" fill="url(#oro-grad-${negocio.id})" stroke="#92400E" stroke-width="1.2"/>
-          <circle cx="6" cy="10" r="2.5" fill="#FEF3C7" stroke="#92400E" stroke-width="1"/>
-          <circle cx="20" cy="5" r="2.8" fill="#EF4444" stroke="#92400E" stroke-width="1"/>
-          <circle cx="34" cy="10" r="2.5" fill="#FEF3C7" stroke="#92400E" stroke-width="1"/>
-          <circle cx="13" cy="17" r="1.6" fill="#10B981" stroke="#92400E" stroke-width="0.8"/>
-          <circle cx="27" cy="17" r="1.6" fill="#3B82F6" stroke="#92400E" stroke-width="0.8"/>
-          <path d="M5 23 L35 23" stroke="url(#oro-brillo-${negocio.id})" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M25.5 3 C25.8 5.4 26.6 6.2 29 6.5 C26.6 6.8 25.8 7.6 25.5 10 C25.2 7.6 24.4 6.8 22 6.5 C24.4 6.2 25.2 5.4 25.5 3 Z"
+                fill="#FEF3C7"/>
         </svg>
       </div>
     `
@@ -78,7 +71,7 @@ function iconoNegocio(negocio, opciones = {}) {
     className: 'pin-marca',
     html: `
       <div style="position:relative;width:${size}px;height:${size + 12 + (destacado ? 20 : 0)}px;transform:translate(-50%,-100%);">
-        ${coronaHTML}
+        ${brilloHTML}
         <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:12px solid ${cat.color}"></div>
         <div style="
           position:absolute;
@@ -167,8 +160,8 @@ function MapViewInner({
       scrollWheelZoom
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; OpenStreetMap, &copy; CARTO'
+        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
       />
 
       <MapaRefCapture mapaRef={mapaRef} />

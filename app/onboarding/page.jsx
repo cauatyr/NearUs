@@ -13,7 +13,7 @@ import Logo from '@/components/Logo'
 const MapaPin = dynamic(() => import('@/components/MapaPin'), {
   ssr: false,
   loading: () => (
-    <div className="h-64 w-full rounded-2xl bg-zinc-100 grid place-items-center text-zinc-400 text-sm">
+    <div className="h-64 w-full rounded-2xl bg-white/10 grid place-items-center text-zinc-400 text-sm">
       Cargando mapa…
     </div>
   )
@@ -92,15 +92,15 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-50">
-      <header className="sticky top-0 z-20 bg-white border-b border-zinc-100">
+    <main className="min-h-screen bg-white/5">
+      <header className="sticky top-0 z-20 bg-nocturno-500 border-b border-white/10">
         <div className="max-w-3xl mx-auto px-5 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-zinc-600 hover:text-black">
+          <Link href="/" className="flex items-center gap-2 text-zinc-300 hover:text-white">
             <ArrowLeft className="w-5 h-5" /> <span className="text-sm font-medium">Volver</span>
           </Link>
           <div className="flex items-center gap-2">
             <Logo size="sm" />
-            <span className="hidden sm:inline text-xs text-zinc-500 font-medium border-l border-zinc-200 pl-2 ml-1">
+            <span className="hidden sm:inline text-xs text-zinc-400 font-medium border-l border-white/10 pl-2 ml-1">
               Negocios
             </span>
           </div>
@@ -114,10 +114,10 @@ export default function OnboardingPage() {
             <div key={i} className="flex-1">
               <div
                 className={`h-1.5 rounded-full transition-colors ${
-                  i <= paso ? 'bg-marca-500' : 'bg-zinc-200'
+                  i <= paso ? 'bg-marca-500' : 'bg-white/10'
                 }`}
               />
-              <div className={`mt-2 text-xs ${i === paso ? 'text-marca-600 font-medium' : 'text-zinc-500'}`}>
+              <div className={`mt-2 text-xs ${i === paso ? 'text-marca-600 font-medium' : 'text-zinc-400'}`}>
                 {nombre}
               </div>
             </div>
@@ -125,7 +125,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Steps */}
-        <div className="bg-white rounded-3xl border border-zinc-100 p-6 sm:p-10 shadow-suave">
+        <div className="bg-nocturno-500 rounded-3xl border border-white/10 p-6 sm:p-10 shadow-suave">
           {paso === 0 && <PasoNegocio datos={datos} actualizar={actualizar} />}
           {paso === 1 && (
             <PasoUbicacion
@@ -151,7 +151,7 @@ export default function OnboardingPage() {
               {paso > 0 ? (
                 <button
                   onClick={() => setPaso(paso - 1)}
-                  className="text-sm text-zinc-600 hover:text-zinc-900 px-4 py-2"
+                  className="text-sm text-zinc-300 hover:text-white px-4 py-2"
                 >
                   Atrás
                 </button>
@@ -161,7 +161,7 @@ export default function OnboardingPage() {
               <button
                 onClick={siguiente}
                 disabled={!puedeAvanzar()}
-                className="bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white font-medium px-6 py-3 rounded-full transition"
+                className="bg-marca-500 hover:bg-marca-600 disabled:bg-white/10 disabled:text-zinc-400 disabled:cursor-not-allowed text-white font-medium px-6 py-3 rounded-full transition"
               >
                 {paso === 2 ? 'Crear negocio' : 'Continuar'}
               </button>
@@ -169,7 +169,7 @@ export default function OnboardingPage() {
           )}
         </div>
 
-        <p className="text-center text-xs text-zinc-500 mt-6">
+        <p className="text-center text-xs text-zinc-400 mt-6">
           Plan básico gratuito · Sin compromisos
         </p>
       </div>
@@ -184,8 +184,8 @@ function PasoNegocio({ datos, actualizar }) {
         <Store className="w-4 h-4" />
         <span className="text-xs font-medium uppercase tracking-wide">Paso 1 de 3</span>
       </div>
-      <h2 className="text-2xl font-semibold text-zinc-900">Cuéntanos de tu negocio</h2>
-      <p className="text-zinc-600 mt-1">Información básica que verán tus futuros clientes.</p>
+      <h2 className="text-2xl font-semibold text-white">Cuéntanos de tu negocio</h2>
+      <p className="text-zinc-300 mt-1">Información básica que verán tus futuros clientes.</p>
 
       <div className="mt-6 space-y-5">
         <Campo
@@ -195,7 +195,7 @@ function PasoNegocio({ datos, actualizar }) {
           onChange={(v) => actualizar('nombre', v)}
         />
         <div>
-          <label className="text-sm font-medium text-zinc-700">Categoría</label>
+          <label className="text-sm font-medium text-zinc-200">Categoría</label>
           <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
             {CATEGORIAS.map((c) => (
               <button
@@ -203,8 +203,8 @@ function PasoNegocio({ datos, actualizar }) {
                 onClick={() => actualizar('categoria', c.id)}
                 className={`p-3 rounded-xl text-sm font-medium border-2 transition ${
                   datos.categoria === c.id
-                    ? 'border-marca-500 bg-marca-50 text-marca-600'
-                    : 'border-zinc-200 hover:border-zinc-300 text-zinc-700'
+                    ? 'border-marca-500 bg-marca-500/10 text-marca-600'
+                    : 'border-white/10 hover:border-white/20 text-zinc-200'
                 }`}
               >
                 {c.nombre}
@@ -253,23 +253,23 @@ function CampoLogo({ valor, onChange }) {
 
   return (
     <div>
-      <label className="text-sm font-medium text-zinc-700">
+      <label className="text-sm font-medium text-zinc-200">
         Logo del negocio <span className="text-red-500">*</span>
       </label>
-      <p className="text-xs text-zinc-500 mt-0.5">
+      <p className="text-xs text-zinc-400 mt-0.5">
         Esta imagen aparecerá como el pin de tu negocio en el mapa.
       </p>
 
       {valor ? (
-        <div className="mt-2 flex items-center gap-4 bg-zinc-50 border border-zinc-200 rounded-2xl p-3">
+        <div className="mt-2 flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-3">
           <img
             src={valor}
             alt="Logo del negocio"
             className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow"
           />
           <div className="flex-1">
-            <div className="text-sm font-medium text-zinc-900">Logo listo</div>
-            <div className="text-xs text-zinc-500 mt-0.5">256 × 256 px · jpeg comprimido</div>
+            <div className="text-sm font-medium text-white">Logo listo</div>
+            <div className="text-xs text-zinc-400 mt-0.5">256 × 256 px · jpeg comprimido</div>
             <button
               type="button"
               onClick={() => onChange(null)}
@@ -283,8 +283,8 @@ function CampoLogo({ valor, onChange }) {
         <label
           className={`mt-2 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-2xl py-8 px-4 cursor-pointer transition ${
             procesando
-              ? 'border-marca-300 bg-marca-50'
-              : 'border-zinc-300 hover:border-marca-500 hover:bg-marca-50'
+              ? 'border-marca-300 bg-marca-500/10'
+              : 'border-white/20 hover:border-marca-500 hover:bg-marca-500/10'
           }`}
         >
           <input
@@ -302,8 +302,8 @@ function CampoLogo({ valor, onChange }) {
           ) : (
             <>
               <ImagePlus className="w-8 h-8 text-zinc-400" />
-              <span className="text-sm font-medium text-zinc-700">Sube el logo</span>
-              <span className="text-xs text-zinc-500">JPG, PNG o WEBP · máx. 5 MB</span>
+              <span className="text-sm font-medium text-zinc-200">Sube el logo</span>
+              <span className="text-xs text-zinc-400">JPG, PNG o WEBP · máx. 5 MB</span>
             </>
           )}
         </label>
@@ -351,8 +351,8 @@ function PasoUbicacion({ datos, actualizar, actualizarUbicacion, ubicacionTocada
         <MapPin className="w-4 h-4" />
         <span className="text-xs font-medium uppercase tracking-wide">Paso 2 de 3</span>
       </div>
-      <h2 className="text-2xl font-semibold text-zinc-900">¿Dónde están ubicados?</h2>
-      <p className="text-zinc-600 mt-1">Para que aparezcan en el mapa de NearUs.</p>
+      <h2 className="text-2xl font-semibold text-white">¿Dónde están ubicados?</h2>
+      <p className="text-zinc-300 mt-1">Para que aparezcan en el mapa de NearUs.</p>
 
       <div className="mt-6 space-y-5">
         <Campo
@@ -369,13 +369,13 @@ function PasoUbicacion({ datos, actualizar, actualizarUbicacion, ubicacionTocada
         />
 
         <div>
-          <label className="text-sm font-medium text-zinc-700">Marca tu ubicación exacta</label>
+          <label className="text-sm font-medium text-zinc-200">Marca tu ubicación exacta</label>
 
           <button
             type="button"
             onClick={usarMiUbicacion}
             disabled={buscandoGps}
-            className="mt-2 w-full flex items-center justify-center gap-2 bg-marca-50 hover:bg-marca-100 disabled:opacity-60 text-marca-700 font-medium py-3 rounded-2xl border border-marca-100 transition"
+            className="mt-2 w-full flex items-center justify-center gap-2 bg-marca-500/10 hover:bg-marca-500/15 disabled:opacity-60 text-marca-700 font-medium py-3 rounded-2xl border border-marca-500/20 transition"
           >
             {buscandoGps ? (
               <>
@@ -387,11 +387,11 @@ function PasoUbicacion({ datos, actualizar, actualizarUbicacion, ubicacionTocada
               </>
             )}
           </button>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-zinc-400">
             Te dejamos el pin donde estás; luego podés ajustarlo a la dirección exacta del local.
           </p>
           {gpsError && (
-            <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+            <p className="mt-2 text-xs text-amber-700 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
               {gpsError}
             </p>
           )}
@@ -400,18 +400,18 @@ function PasoUbicacion({ datos, actualizar, actualizarUbicacion, ubicacionTocada
             <MapaPin lat={datos.lat} lng={datos.lng} onCambio={actualizarUbicacion} />
           </div>
           {!ubicacionTocada && (
-            <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+            <p className="mt-2 text-xs text-amber-700 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
               Confirma la ubicación tocando el mapa o arrastrando el pin.
             </p>
           )}
           {ubicacionTocada && (
-            <p className="mt-2 text-xs text-acento-600 bg-acento-50 border border-acento-100 rounded-lg px-3 py-2">
+            <p className="mt-2 text-xs text-acento-600 bg-acento-500/10 border border-acento-500/20 rounded-lg px-3 py-2">
               Ubicación lista: {datos.lat.toFixed(5)}, {datos.lng.toFixed(5)}
             </p>
           )}
         </div>
 
-        <div className="bg-marca-50 border border-marca-100 rounded-2xl p-4 text-sm text-marca-700">
+        <div className="bg-marca-500/10 border border-marca-500/20 rounded-2xl p-4 text-sm text-marca-700">
           <p className="font-medium">
             {activas.map((c) => c.nombre).join(' · ')} · {activas[0]?.pais}
           </p>
@@ -434,8 +434,8 @@ function PasoContacto({ datos, actualizar }) {
         <Phone className="w-4 h-4" />
         <span className="text-xs font-medium uppercase tracking-wide">Paso 3 de 3</span>
       </div>
-      <h2 className="text-2xl font-semibold text-zinc-900">Datos de contacto</h2>
-      <p className="text-zinc-600 mt-1">Te enviaremos el acceso al panel del negocio.</p>
+      <h2 className="text-2xl font-semibold text-white">Datos de contacto</h2>
+      <p className="text-zinc-300 mt-1">Te enviaremos el acceso al panel del negocio.</p>
 
       <div className="mt-6 space-y-5">
         <Campo
@@ -469,7 +469,7 @@ function PasoContacto({ datos, actualizar }) {
           icono={Lock}
           type="password"
         />
-        <p className="text-xs text-zinc-500 -mt-2">
+        <p className="text-xs text-zinc-400 -mt-2">
           Con este email y contraseña vas a entrar al panel de tu negocio en NearUs.
         </p>
       </div>
@@ -481,9 +481,9 @@ function PasoListo({ datos, estado, errorMsg, idCreado, reintentar }) {
   if (estado === 'creando') {
     return (
       <div className="text-center py-10">
-        <div className="w-12 h-12 mx-auto border-4 border-zinc-200 border-t-marca-500 rounded-full animate-spin" />
-        <h2 className="mt-6 text-xl font-semibold text-zinc-900">Creando tu negocio…</h2>
-        <p className="text-zinc-500 mt-2 text-sm">Estamos publicando <strong>{datos.nombre}</strong> en el mapa.</p>
+        <div className="w-12 h-12 mx-auto border-4 border-white/10 border-t-marca-500 rounded-full animate-spin" />
+        <h2 className="mt-6 text-xl font-semibold text-white">Creando tu negocio…</h2>
+        <p className="text-zinc-400 mt-2 text-sm">Estamos publicando <strong>{datos.nombre}</strong> en el mapa.</p>
       </div>
     )
   }
@@ -491,11 +491,11 @@ function PasoListo({ datos, estado, errorMsg, idCreado, reintentar }) {
   if (estado === 'error') {
     return (
       <div className="text-center py-6">
-        <div className="w-16 h-16 mx-auto bg-red-100 rounded-full grid place-items-center">
+        <div className="w-16 h-16 mx-auto bg-red-500/15 rounded-full grid place-items-center">
           <AlertCircle className="w-8 h-8 text-red-600" strokeWidth={2.5} />
         </div>
-        <h2 className="mt-5 text-2xl font-semibold text-zinc-900">No pudimos crear el negocio</h2>
-        <p className="text-zinc-600 mt-2 max-w-md mx-auto text-sm">{errorMsg}</p>
+        <h2 className="mt-5 text-2xl font-semibold text-white">No pudimos crear el negocio</h2>
+        <p className="text-zinc-300 mt-2 max-w-md mx-auto text-sm">{errorMsg}</p>
         <button
           onClick={reintentar}
           className="mt-5 bg-marca-500 hover:bg-marca-600 text-white font-semibold px-6 py-3 rounded-full"
@@ -512,13 +512,13 @@ function PasoListo({ datos, estado, errorMsg, idCreado, reintentar }) {
       <div className="w-16 h-16 mx-auto bg-acento-500 rounded-full grid place-items-center">
         <Check className="w-8 h-8 text-white" strokeWidth={3} />
       </div>
-      <h2 className="mt-5 text-2xl font-semibold text-zinc-900">¡Bienvenido a NearUs!</h2>
-      <p className="text-zinc-600 mt-2 max-w-md mx-auto">
+      <h2 className="mt-5 text-2xl font-semibold text-white">¡Bienvenido a NearUs!</h2>
+      <p className="text-zinc-300 mt-2 max-w-md mx-auto">
         <strong>{datos.nombre}</strong> ya está publicado en el mapa de Cuenca. Tus futuros clientes
         ya pueden encontrarte.
       </p>
 
-      <div className="mt-6 bg-marca-50 border border-marca-100 rounded-2xl p-5 text-left max-w-md mx-auto">
+      <div className="mt-6 bg-marca-500/10 border border-marca-500/20 rounded-2xl p-5 text-left max-w-md mx-auto">
         <div className="flex items-center gap-2 text-marca-700 font-medium text-sm">
           <Sparkles className="w-4 h-4" />
           Próximos pasos
@@ -532,14 +532,14 @@ function PasoListo({ datos, estado, errorMsg, idCreado, reintentar }) {
           </Link>
           <Link
             href={`/explorar/${idCreado}`}
-            className="bg-white border border-marca-100 rounded-xl px-4 py-3 text-sm font-medium text-marca-600 hover:bg-marca-50 text-center"
+            className="bg-nocturno-500 border border-marca-500/20 rounded-xl px-4 py-3 text-sm font-medium text-marca-600 hover:bg-marca-500/10 text-center"
           >
             Ver mi negocio
           </Link>
         </div>
         <Link
           href="/negocio/agenda"
-          className="mt-2 block bg-white border border-marca-100 rounded-xl px-4 py-3 text-sm font-medium text-marca-600 hover:bg-marca-50 text-center"
+          className="mt-2 block bg-nocturno-500 border border-marca-500/20 rounded-xl px-4 py-3 text-sm font-medium text-marca-600 hover:bg-marca-500/10 text-center"
         >
           Ir al panel demo
         </Link>
@@ -551,7 +551,7 @@ function PasoListo({ datos, estado, errorMsg, idCreado, reintentar }) {
 function Campo({ etiqueta, placeholder, valor, onChange, type = 'text', textarea, icono: Icono }) {
   return (
     <div>
-      <label className="text-sm font-medium text-zinc-700">{etiqueta}</label>
+      <label className="text-sm font-medium text-zinc-200">{etiqueta}</label>
       <div className="mt-2 relative">
         {Icono && <Icono className="w-4 h-4 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" />}
         {textarea ? (
@@ -560,7 +560,7 @@ function Campo({ etiqueta, placeholder, valor, onChange, type = 'text', textarea
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             rows={3}
-            className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-white transition resize-none"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-nocturno-400 transition resize-none"
           />
         ) : (
           <input
@@ -568,7 +568,7 @@ function Campo({ etiqueta, placeholder, valor, onChange, type = 'text', textarea
             value={valor}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
-            className={`w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-white transition ${
+            className={`w-full bg-white/5 border border-white/10 rounded-xl py-3 text-white placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-nocturno-400 transition ${
               Icono ? 'pl-11 pr-4' : 'px-4'
             }`}
           />

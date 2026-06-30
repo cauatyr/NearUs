@@ -28,7 +28,7 @@ export default function DetalleNegocio() {
   return (
     <div className="pb-32">
       {/* Portada */}
-      <div className="relative h-56 bg-zinc-200">
+      <div className="relative h-56 bg-white/10">
         <Image
           src={negocio.portada}
           alt={negocio.nombre}
@@ -43,18 +43,18 @@ export default function DetalleNegocio() {
           onClick={() => router.back()}
           className="absolute top-4 left-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full grid place-items-center shadow-md"
         >
-          <ArrowLeft className="w-5 h-5 text-zinc-900" />
+          <ArrowLeft className="w-5 h-5 text-white" />
         </button>
 
         <div className="absolute top-4 right-4 flex gap-2">
           <button className="w-10 h-10 bg-white/90 backdrop-blur rounded-full grid place-items-center shadow-md">
-            <Share2 className="w-4 h-4 text-zinc-900" />
+            <Share2 className="w-4 h-4 text-white" />
           </button>
           <button
             onClick={() => toggleFavorito(id)}
             className="w-10 h-10 bg-white/90 backdrop-blur rounded-full grid place-items-center shadow-md"
           >
-            <Heart className={`w-5 h-5 ${esFav ? 'fill-red-500 text-red-500' : 'text-zinc-900'}`} />
+            <Heart className={`w-5 h-5 ${esFav ? 'fill-red-500 text-red-500' : 'text-white'}`} />
           </button>
         </div>
 
@@ -73,23 +73,23 @@ export default function DetalleNegocio() {
         >
           {categoria?.nombre}
         </span>
-        <h1 className="mt-1 text-2xl font-semibold text-zinc-900 leading-tight">
+        <h1 className="mt-1 text-2xl font-semibold text-white leading-tight">
           {negocio.nombre}
         </h1>
-        <div className="mt-2 flex items-center gap-3 text-sm text-zinc-600">
+        <div className="mt-2 flex items-center gap-3 text-sm text-zinc-300">
           <span className="flex items-center gap-1">
             <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-            <strong className="text-zinc-900">{negocio.rating}</strong>
-            <span className="text-zinc-500">({negocio.reviews} reseñas)</span>
+            <strong className="text-white">{negocio.rating}</strong>
+            <span className="text-zinc-400">({negocio.reviews} reseñas)</span>
           </span>
         </div>
 
-        <p className="mt-4 text-zinc-700 leading-relaxed">{negocio.descripcion}</p>
+        <p className="mt-4 text-zinc-200 leading-relaxed">{negocio.descripcion}</p>
 
         <div className="mt-5 space-y-2.5 text-sm">
           <Info icono={MapPin}>
             <div>{negocio.direccion}</div>
-            <div className="text-zinc-500">{negocio.barrio} · Cuenca</div>
+            <div className="text-zinc-400">{negocio.barrio} · Cuenca</div>
           </Info>
           <Info icono={Clock}>{negocio.horario}</Info>
           <Info icono={Phone}>
@@ -101,7 +101,7 @@ export default function DetalleNegocio() {
       </div>
 
       {/* Tabs */}
-      <div className="mt-7 border-b border-zinc-100 px-5">
+      <div className="mt-7 border-b border-white/10 px-5">
         <div className="flex gap-1">
           {['servicios', 'equipo', 'reseñas'].map((t) => (
             <button
@@ -110,7 +110,7 @@ export default function DetalleNegocio() {
               className={`px-4 py-2.5 text-sm font-medium capitalize border-b-2 -mb-px transition ${
                 tab === t
                   ? 'border-marca-500 text-marca-600'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-900'
+                  : 'border-transparent text-zinc-400 hover:text-white'
               }`}
             >
               {t}
@@ -127,17 +127,17 @@ export default function DetalleNegocio() {
               <Link
                 key={s.id}
                 href={`/reservar/${s.id}`}
-                className="block bg-white border border-zinc-100 hover:border-marca-300 rounded-2xl p-4 transition group"
+                className="block bg-nocturno-500 border border-white/10 hover:border-marca-300 rounded-2xl p-4 transition group"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-zinc-900">{s.nombre}</div>
-                    <div className="text-xs text-zinc-500 mt-1 flex items-center gap-1">
+                    <div className="font-medium text-white">{s.nombre}</div>
+                    <div className="text-xs text-zinc-400 mt-1 flex items-center gap-1">
                       <Clock className="w-3 h-3" /> {formatoDuracion(s.duracion)}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold text-zinc-900">{formatoUSD(s.precio)}</div>
+                    <div className="font-semibold text-white">{formatoUSD(s.precio)}</div>
                     <div className="text-xs text-marca-500 mt-1 flex items-center justify-end gap-0.5 group-hover:gap-1.5 transition-all">
                       Reservar <ChevronRight className="w-3 h-3" />
                     </div>
@@ -151,18 +151,18 @@ export default function DetalleNegocio() {
         {tab === 'equipo' && (
           <div>
             {empleados.length === 0 ? (
-              <div className="text-center py-10 text-zinc-500 text-sm">
+              <div className="text-center py-10 text-zinc-400 text-sm">
                 Este negocio aún no ha agregado profesionales al panel.
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 {empleados.map((e) => (
-                  <div key={e.id} className="bg-white border border-zinc-100 rounded-2xl p-4 text-center">
-                    <div className="w-14 h-14 mx-auto rounded-full bg-marca-100 grid place-items-center text-marca-600 font-semibold">
+                  <div key={e.id} className="bg-nocturno-500 border border-white/10 rounded-2xl p-4 text-center">
+                    <div className="w-14 h-14 mx-auto rounded-full bg-marca-500/15 grid place-items-center text-marca-600 font-semibold">
                       {e.avatar}
                     </div>
-                    <div className="mt-3 font-medium text-sm text-zinc-900">{e.nombre}</div>
-                    <div className="text-xs text-zinc-500">{e.cargo}</div>
+                    <div className="mt-3 font-medium text-sm text-white">{e.nombre}</div>
+                    <div className="text-xs text-zinc-400">{e.cargo}</div>
                   </div>
                 ))}
               </div>
@@ -196,7 +196,7 @@ export default function DetalleNegocio() {
 
       {/* CTA fija inferior */}
       <div
-        className="fixed bottom-16 left-0 right-0 z-20 max-w-md mx-auto px-4 pt-3 pb-3 bg-white border-t border-zinc-100"
+        className="fixed bottom-16 left-0 right-0 z-20 max-w-md mx-auto px-4 pt-3 pb-3 bg-nocturno-500 border-t border-white/10"
         style={{ paddingBottom: 'calc(0.75rem + var(--safe-bottom))' }}
       >
         <Link
@@ -215,22 +215,22 @@ function Info({ icono: Icono, children }) {
   return (
     <div className="flex items-start gap-3">
       <Icono className="w-4 h-4 text-zinc-400 mt-0.5 shrink-0" />
-      <div className="text-zinc-700">{children}</div>
+      <div className="text-zinc-200">{children}</div>
     </div>
   )
 }
 
 function ResenaDemo({ nombre, fecha, rating, texto }) {
   return (
-    <div className="bg-white border border-zinc-100 rounded-2xl p-4">
+    <div className="bg-nocturno-500 border border-white/10 rounded-2xl p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full bg-marca-100 grid place-items-center text-marca-600 font-semibold text-xs">
+          <div className="w-9 h-9 rounded-full bg-marca-500/15 grid place-items-center text-marca-600 font-semibold text-xs">
             {nombre.split(' ').map((n) => n[0]).join('')}
           </div>
           <div>
-            <div className="text-sm font-medium text-zinc-900">{nombre}</div>
-            <div className="text-xs text-zinc-500">{fecha}</div>
+            <div className="text-sm font-medium text-white">{nombre}</div>
+            <div className="text-xs text-zinc-400">{fecha}</div>
           </div>
         </div>
         <div className="flex gap-0.5">
@@ -244,7 +244,7 @@ function ResenaDemo({ nombre, fecha, rating, texto }) {
           ))}
         </div>
       </div>
-      <p className="mt-3 text-sm text-zinc-700 leading-relaxed">{texto}</p>
+      <p className="mt-3 text-sm text-zinc-200 leading-relaxed">{texto}</p>
     </div>
   )
 }

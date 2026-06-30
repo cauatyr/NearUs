@@ -67,8 +67,8 @@ export default function EmpleadosPage() {
     <div className="p-5 md:p-8 max-w-5xl">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900">Equipo</h1>
-          <p className="text-sm text-zinc-500">{equipo.length} profesionales en tu negocio</p>
+          <h1 className="text-2xl font-semibold text-white">Equipo</h1>
+          <p className="text-sm text-zinc-400">{equipo.length} profesionales en tu negocio</p>
         </div>
         <button
           onClick={() => setEditando({})}
@@ -79,7 +79,7 @@ export default function EmpleadosPage() {
       </div>
 
       {error && (
-        <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+        <div className="mt-4 bg-red-500/10 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
           No se pudo guardar: {error}
         </div>
       )}
@@ -87,20 +87,20 @@ export default function EmpleadosPage() {
       {/* Grid de empleados */}
       <div className="mt-7 grid sm:grid-cols-2 gap-3">
         {equipo.length === 0 && (
-          <div className="col-span-full text-center py-10 text-sm text-zinc-500">
+          <div className="col-span-full text-center py-10 text-sm text-zinc-400">
             Aún no hay miembros del equipo.
           </div>
         )}
         {equipo.map((e) => (
-          <div key={e.id} className="bg-white rounded-2xl border border-zinc-100 p-5 hover:border-marca-200 transition">
+          <div key={e.id} className="bg-nocturno-500 rounded-2xl border border-white/10 p-5 hover:border-marca-200 transition">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-full bg-marca-100 grid place-items-center text-marca-600 font-semibold">
+                <div className="w-14 h-14 rounded-full bg-marca-500/15 grid place-items-center text-marca-600 font-semibold">
                   {e.avatar}
                 </div>
                 <div>
-                  <div className="font-semibold text-zinc-900">{e.nombre}</div>
-                  <div className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5">
+                  <div className="font-semibold text-white">{e.nombre}</div>
+                  <div className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
                     <Briefcase className="w-3 h-3" /> {e.cargo}
                   </div>
                 </div>
@@ -108,13 +108,13 @@ export default function EmpleadosPage() {
               <div className="flex gap-1">
                 <button
                   onClick={() => setEditando(e)}
-                  className="w-8 h-8 rounded-full hover:bg-zinc-100 grid place-items-center text-zinc-600"
+                  className="w-8 h-8 rounded-full hover:bg-white/10 grid place-items-center text-zinc-300"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => eliminar(e.id)}
-                  className="w-8 h-8 rounded-full hover:bg-red-50 grid place-items-center text-red-500"
+                  className="w-8 h-8 rounded-full hover:bg-red-500/10 grid place-items-center text-red-500"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -122,7 +122,7 @@ export default function EmpleadosPage() {
             </div>
 
             <div className="mt-4 pt-4 border-t border-zinc-50">
-              <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">Días de trabajo</div>
+              <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium">Días de trabajo</div>
               <div className="mt-2 flex gap-1">
                 {DIAS.map((d) => {
                   const trabaja = e.diasTrabajo.includes(d)
@@ -130,7 +130,7 @@ export default function EmpleadosPage() {
                     <div
                       key={d}
                       className={`w-8 h-8 rounded-lg text-[10px] font-semibold grid place-items-center ${
-                        trabaja ? 'bg-marca-500 text-white' : 'bg-zinc-100 text-zinc-400'
+                        trabaja ? 'bg-marca-500 text-white' : 'bg-white/10 text-zinc-400'
                       }`}
                     >
                       {d}
@@ -176,12 +176,12 @@ function ModalEmpleado({ empleado, onGuardar, onCerrar }) {
 
   return (
     <div className="fixed inset-0 z-30 bg-black/40 grid place-items-center p-4" onClick={onCerrar}>
-      <div className="bg-white rounded-3xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-nocturno-500 rounded-3xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-zinc-900">
+          <h3 className="text-lg font-semibold text-white">
             {empleado.id ? 'Editar miembro' : 'Agregar al equipo'}
           </h3>
-          <button onClick={onCerrar} className="w-8 h-8 rounded-full hover:bg-zinc-100 grid place-items-center">
+          <button onClick={onCerrar} className="w-8 h-8 rounded-full hover:bg-white/10 grid place-items-center">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -207,7 +207,7 @@ function ModalEmpleado({ empleado, onGuardar, onCerrar }) {
           />
 
           <div>
-            <label className="text-xs font-medium text-zinc-600">Días de trabajo</label>
+            <label className="text-xs font-medium text-zinc-300">Días de trabajo</label>
             <div className="mt-1.5 flex gap-1.5">
               {DIAS.map((d) => (
                 <button
@@ -216,7 +216,7 @@ function ModalEmpleado({ empleado, onGuardar, onCerrar }) {
                   className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${
                     datos.diasTrabajo.includes(d)
                       ? 'border-marca-500 bg-marca-500 text-white'
-                      : 'border-zinc-200 text-zinc-500 hover:border-zinc-300'
+                      : 'border-white/10 text-zinc-400 hover:border-white/20'
                   }`}
                 >
                   {d}
@@ -227,13 +227,13 @@ function ModalEmpleado({ empleado, onGuardar, onCerrar }) {
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-2">
-          <button onClick={onCerrar} className="bg-white border border-zinc-200 hover:bg-zinc-50 rounded-full py-2.5 text-sm font-medium text-zinc-700">
+          <button onClick={onCerrar} className="bg-nocturno-500 border border-white/10 hover:bg-white/5 rounded-full py-2.5 text-sm font-medium text-zinc-200">
             Cancelar
           </button>
           <button
             disabled={!valido}
             onClick={() => onGuardar(datos)}
-            className="bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-full py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5"
+            className="bg-marca-500 hover:bg-marca-600 disabled:bg-white/10 disabled:text-zinc-400 text-white rounded-full py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5"
           >
             <Check className="w-4 h-4" /> Guardar
           </button>
@@ -246,12 +246,12 @@ function ModalEmpleado({ empleado, onGuardar, onCerrar }) {
 function Campo({ label, valor, onChange, placeholder }) {
   return (
     <div>
-      <label className="text-xs font-medium text-zinc-600">{label}</label>
+      <label className="text-xs font-medium text-zinc-300">{label}</label>
       <input
         value={valor}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-marca-500 focus:bg-white"
+        className="mt-1.5 w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-marca-500 focus:bg-nocturno-400"
       />
     </div>
   )

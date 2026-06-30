@@ -13,7 +13,7 @@ export default function Logo({ size = 'md', invertido = false, soloIcono = false
     return (
       <div
         className={`grid place-items-center rounded-2xl font-bold shrink-0 ${
-          invertido ? 'bg-marca-500 text-white' : 'bg-black text-white'
+          invertido ? 'bg-marca-500 text-white' : 'bg-nocturno-500 text-white'
         }`}
         style={{ width: h, height: h }}
       >
@@ -22,14 +22,13 @@ export default function Logo({ size = 'md', invertido = false, soloIcono = false
     )
   }
 
+  // App con tema oscuro: el wordmark va en blanco por defecto.
   return (
     <div
-      className={`inline-flex items-center font-extrabold tracking-tight select-none ${
-        invertido ? 'text-white' : 'text-black'
-      }`}
+      className="inline-flex items-center font-extrabold tracking-tight select-none text-white"
       style={{ fontSize: h * 0.7, lineHeight: 1 }}
     >
-      <PinIcono size={h * 0.85} color={invertido ? 'white' : 'currentColor'} className="mr-1.5" />
+      <PinIcono size={h * 0.85} color="white" className="mr-1.5" />
       <span style={{ letterSpacing: '-0.02em' }}>NEAR</span>
       <span className="text-marca-500" style={{ letterSpacing: '-0.02em' }}>US</span>
     </div>

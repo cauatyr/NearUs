@@ -1,13 +1,13 @@
 'use client'
-import { Crown, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { formatoUSD } from '@/lib/utils'
 
 export default function PromocionPage() {
   return (
     <div className="p-5 md:p-8 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-extrabold text-black">Promoción</h1>
-        <p className="text-sm text-zinc-500">
+        <h1 className="text-2xl font-extrabold text-white">Promoción</h1>
+        <p className="text-sm text-zinc-400">
           Haz que más clientes encuentren tu negocio
         </p>
       </div>
@@ -21,7 +21,7 @@ export default function PromocionPage() {
         <div className="relative">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-amber-400 grid place-items-center shadow-lg">
-              <Crown className="w-5 h-5 text-amber-950 fill-amber-950" />
+              <Sparkles className="w-5 h-5 text-amber-950 fill-amber-950" />
             </div>
             <h3 className="text-lg font-extrabold">Plan Pro</h3>
           </div>
@@ -43,14 +43,14 @@ export default function PromocionPage() {
           </div>
 
           <div className="mt-3 flex items-center justify-center py-4">
-            <PreviewMarcadorCorona />
+            <PreviewMarcadorBrillo />
           </div>
 
           <h4 className="text-center text-xl font-extrabold leading-tight">
             Tu negocio destacado en el mapa
           </h4>
           <p className="text-center text-sm text-zinc-300 mt-2 leading-relaxed">
-            Aparece con <strong className="text-amber-300">corona dorada</strong> visible para
+            Aparece con un <strong className="text-amber-300">brillo dorado</strong> visible para
             todos los usuarios de NearUs. Posicionado primero en los resultados.
             Más visualizaciones, más reservas.
           </p>
@@ -65,11 +65,11 @@ export default function PromocionPage() {
       </div>
 
       {/* Aclaración */}
-      <div className="mt-5 bg-zinc-50 border border-zinc-200 rounded-2xl p-4 flex items-start gap-3">
+      <div className="mt-5 bg-white/5 border border-white/10 rounded-2xl p-4 flex items-start gap-3">
         <Sparkles className="w-5 h-5 text-marca-500 shrink-0 mt-0.5" />
-        <div className="text-sm text-zinc-700 leading-relaxed">
-          <strong className="text-black">El plan Pro tiene un único beneficio:</strong> tu negocio
-          aparece <strong>destacado en el mapa con corona dorada</strong> mientras pagues la
+        <div className="text-sm text-zinc-200 leading-relaxed">
+          <strong className="text-white">El plan Pro tiene un único beneficio:</strong> tu negocio
+          aparece <strong>destacado en el mapa con un brillo dorado</strong> mientras pagues la
           suscripción mensual. Todas las demás funciones (agenda, reservas, reportes, equipo,
           QR) están incluidas de forma gratuita.
         </div>
@@ -78,30 +78,28 @@ export default function PromocionPage() {
   )
 }
 
-function PreviewMarcadorCorona() {
+function PreviewMarcadorBrillo() {
   return (
     <div className="relative">
-      <svg width="54" height="46" viewBox="0 0 40 32" className="mx-auto mb-1 animate-pulse">
+      <svg width="40" height="40" viewBox="0 0 32 32" className="mx-auto mb-1 animate-pulse">
         <defs>
-          <linearGradient id="oro-preview" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#FCD34D" />
-            <stop offset="45%" stopColor="#F59E0B" />
-            <stop offset="100%" stopColor="#B45309" />
+          <linearGradient id="brillo-preview" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#FDE68A" />
+            <stop offset="50%" stopColor="#F59E0B" />
+            <stop offset="100%" stopColor="#D97706" />
           </linearGradient>
         </defs>
         <path
-          d="M4 26 L6 10 L13 17 L20 5 L27 17 L34 10 L36 26 Z"
-          fill="url(#oro-preview)"
-          stroke="#92400E"
-          strokeWidth="1.5"
+          d="M16 2 C17.2 11 21 14.8 30 16 C21 17.2 17.2 21 16 30 C14.8 21 11 17.2 2 16 C11 14.8 14.8 11 16 2 Z"
+          fill="url(#brillo-preview)"
+          stroke="#B45309"
+          strokeWidth="1"
           strokeLinejoin="round"
         />
-        <rect x="4" y="25" width="32" height="4" rx="1.5" fill="url(#oro-preview)" stroke="#92400E" strokeWidth="1.2" />
-        <circle cx="6" cy="10" r="2.5" fill="#FEF3C7" stroke="#92400E" strokeWidth="1" />
-        <circle cx="20" cy="5" r="2.8" fill="#EF4444" stroke="#92400E" strokeWidth="1" />
-        <circle cx="34" cy="10" r="2.5" fill="#FEF3C7" stroke="#92400E" strokeWidth="1" />
-        <circle cx="13" cy="17" r="1.6" fill="#10B981" stroke="#92400E" strokeWidth="0.8" />
-        <circle cx="27" cy="17" r="1.6" fill="#3B82F6" stroke="#92400E" strokeWidth="0.8" />
+        <path
+          d="M25.5 3 C25.8 5.4 26.6 6.2 29 6.5 C26.6 6.8 25.8 7.6 25.5 10 C25.2 7.6 24.4 6.8 22 6.5 C24.4 6.2 25.2 5.4 25.5 3 Z"
+          fill="#FEF3C7"
+        />
       </svg>
       {/* Marcador estilo NearUs debajo */}
       <div className="mx-auto" style={{ width: 64 }}>

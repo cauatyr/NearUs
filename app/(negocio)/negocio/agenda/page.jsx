@@ -56,13 +56,13 @@ export default function AgendaPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900">Agenda</h1>
-          <p className="text-sm text-zinc-500">
+          <h1 className="text-2xl font-semibold text-white">Agenda</h1>
+          <p className="text-sm text-zinc-400">
             {esHoy ? 'Hoy' : ''} · {reservasDelDia.length} reservas · {formatoUSD(totalHoy)}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="bg-white border border-zinc-200 hover:bg-zinc-50 rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2">
+          <button className="bg-nocturno-500 border border-white/10 hover:bg-white/5 rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2">
             <Search className="w-4 h-4" /> <span className="hidden sm:inline">Buscar</span>
           </button>
           <button className="bg-marca-500 hover:bg-marca-600 text-white rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2">
@@ -72,12 +72,12 @@ export default function AgendaPage() {
       </div>
 
       {/* Date nav */}
-      <div className="mt-6 flex items-center justify-between bg-white rounded-2xl border border-zinc-100 p-3">
-        <button onClick={() => cambiarFecha(-1)} className="w-9 h-9 grid place-items-center rounded-xl hover:bg-zinc-100">
+      <div className="mt-6 flex items-center justify-between bg-nocturno-500 rounded-2xl border border-white/10 p-3">
+        <button onClick={() => cambiarFecha(-1)} className="w-9 h-9 grid place-items-center rounded-xl hover:bg-white/10">
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="text-center">
-          <div className="font-semibold text-zinc-900">
+          <div className="font-semibold text-white">
             {fecha.getDate()} de {mesCorto(fecha)} {fecha.getFullYear()}
           </div>
           <button
@@ -87,7 +87,7 @@ export default function AgendaPage() {
             Ir a hoy
           </button>
         </div>
-        <button onClick={() => cambiarFecha(1)} className="w-9 h-9 grid place-items-center rounded-xl hover:bg-zinc-100">
+        <button onClick={() => cambiarFecha(1)} className="w-9 h-9 grid place-items-center rounded-xl hover:bg-white/10">
           <ChevronRight className="w-5 h-5" />
         </button>
       </div>
@@ -106,17 +106,17 @@ export default function AgendaPage() {
 
       {/* Timeline */}
       <div className="mt-5 grid md:grid-cols-[1fr_320px] gap-5">
-        <div className="bg-white rounded-2xl border border-zinc-100 overflow-hidden">
+        <div className="bg-nocturno-500 rounded-2xl border border-white/10 overflow-hidden">
           {HORAS.map((h) => {
             const enHora = reservasDelDia.filter((r) => new Date(r.fecha).getHours() === h)
             return (
-              <div key={h} className="flex border-b border-zinc-50 last:border-b-0">
-                <div className="w-16 sm:w-20 shrink-0 p-3 text-xs text-zinc-500 text-right font-medium border-r border-zinc-50">
+              <div key={h} className="flex border-b border-white/5 last:border-b-0">
+                <div className="w-16 sm:w-20 shrink-0 p-3 text-xs text-zinc-400 text-right font-medium border-r border-white/5">
                   {String(h).padStart(2, '0')}:00
                 </div>
                 <div className="flex-1 min-h-[80px] p-2 space-y-1.5">
                   {enHora.length === 0 ? (
-                    <button className="w-full h-full min-h-[64px] border-2 border-dashed border-zinc-100 rounded-xl text-xs text-zinc-300 hover:text-zinc-500 hover:border-zinc-200 transition">
+                    <button className="w-full h-full min-h-[64px] border-2 border-dashed border-white/10 rounded-xl text-xs text-zinc-300 hover:text-zinc-400 hover:border-white/20 transition">
                       + Disponible
                     </button>
                   ) : (
@@ -147,7 +147,7 @@ export default function AgendaPage() {
       {/* Modal mobile */}
       {reservaAbierta && (
         <div className="md:hidden fixed inset-0 z-30 bg-black/40 flex items-end" onClick={() => setReservaAbierta(null)}>
-          <div className="w-full bg-white rounded-t-3xl p-5 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full bg-nocturno-500 rounded-t-3xl p-5 animate-slide-up" onClick={(e) => e.stopPropagation()}>
             <DetalleReserva reserva={reservaAbierta} onCerrar={() => setReservaAbierta(null)} />
           </div>
         </div>
@@ -163,7 +163,7 @@ function ChipEmpleado({ activo, onClick, children }) {
       className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium border transition whitespace-nowrap ${
         activo
           ? 'bg-marca-500 border-marca-500 text-white'
-          : 'bg-white border-zinc-200 text-zinc-700 hover:border-zinc-300'
+          : 'bg-nocturno-500 border-white/10 text-zinc-200 hover:border-white/20'
       }`}
     >
       {children}
@@ -179,13 +179,13 @@ function BloqueReserva({ reserva, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full bg-marca-50 hover:bg-marca-100 border-l-4 border-marca-500 rounded-xl px-3 py-2.5 text-left transition group"
+      className="w-full bg-marca-500/10 hover:bg-marca-500/15 border-l-4 border-marca-500 rounded-xl px-3 py-2.5 text-left transition group"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="font-medium text-sm text-zinc-900 truncate">{reserva.cliente.nombre}</div>
-          <div className="text-xs text-zinc-600 truncate">{servicio?.nombre}</div>
-          <div className="mt-1 text-[11px] text-zinc-500 flex items-center gap-2">
+          <div className="font-medium text-sm text-white truncate">{reserva.cliente.nombre}</div>
+          <div className="text-xs text-zinc-300 truncate">{servicio?.nombre}</div>
+          <div className="mt-1 text-[11px] text-zinc-400 flex items-center gap-2">
             <span className="flex items-center gap-0.5">
               <Clock className="w-3 h-3" /> {String(fecha.getHours()).padStart(2, '0')}:{String(fecha.getMinutes()).padStart(2, '0')}
             </span>
@@ -196,8 +196,8 @@ function BloqueReserva({ reserva, onClick }) {
           </div>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-sm font-semibold text-zinc-900">{formatoUSD(reserva.precio)}</div>
-          <div className="text-[10px] text-zinc-500 mt-0.5">
+          <div className="text-sm font-semibold text-white">{formatoUSD(reserva.precio)}</div>
+          <div className="text-[10px] text-zinc-400 mt-0.5">
             {reserva.metodoPago === 'inapp' ? 'App' : 'Local'}
           </div>
         </div>
@@ -243,20 +243,20 @@ function DetalleReserva({ reserva, onCerrar }) {
   }
 
   return (
-    <div className="bg-white md:rounded-2xl border border-zinc-100 p-5 md:sticky md:top-5">
+    <div className="bg-nocturno-500 md:rounded-2xl border border-white/10 p-5 md:sticky md:top-5">
       <div className="flex items-start justify-between">
         <div>
           <div className="text-[10px] uppercase tracking-wider text-marca-600 font-medium">Reserva</div>
-          <div className="mt-0.5 font-mono text-sm font-semibold text-zinc-900">{reserva.codigo}</div>
+          <div className="mt-0.5 font-mono text-sm font-semibold text-white">{reserva.codigo}</div>
         </div>
-        <button onClick={onCerrar} className="text-zinc-400 hover:text-zinc-900 text-lg">×</button>
+        <button onClick={onCerrar} className="text-zinc-400 hover:text-white text-lg">×</button>
       </div>
 
       <div className="mt-5">
-        <div className="w-14 h-14 bg-marca-100 rounded-full grid place-items-center text-marca-600 font-semibold">
+        <div className="w-14 h-14 bg-marca-500/15 rounded-full grid place-items-center text-marca-600 font-semibold">
           {reserva.cliente.nombre.split(' ').map((n) => n[0]).slice(0, 2).join('')}
         </div>
-        <h3 className="mt-3 font-semibold text-lg text-zinc-900">{reserva.cliente.nombre}</h3>
+        <h3 className="mt-3 font-semibold text-lg text-white">{reserva.cliente.nombre}</h3>
         <a href={`tel:${reserva.cliente.celular}`} className="mt-1 text-sm text-marca-500 flex items-center gap-1">
           <Phone className="w-3.5 h-3.5" /> {reserva.cliente.celular}
         </a>
@@ -273,14 +273,14 @@ function DetalleReserva({ reserva, onCerrar }) {
       </div>
 
       {error && (
-        <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">
+        <div className="mt-4 bg-red-500/10 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">
           No se pudo guardar: {error}
         </div>
       )}
 
       {reagendando ? (
         <div className="mt-5">
-          <div className="text-xs font-semibold text-zinc-700 mb-2">Nueva fecha</div>
+          <div className="text-xs font-semibold text-zinc-200 mb-2">Nueva fecha</div>
           <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
             {dias.map((d) => {
               const sel = d.toDateString() === nuevaFecha.toDateString()
@@ -289,7 +289,7 @@ function DetalleReserva({ reserva, onCerrar }) {
                   key={d.toISOString()}
                   onClick={() => setNuevaFecha(d)}
                   className={`shrink-0 w-12 py-2 rounded-xl border-2 transition flex flex-col items-center ${
-                    sel ? 'border-marca-500 bg-marca-500 text-white' : 'border-zinc-200 text-zinc-700'
+                    sel ? 'border-marca-500 bg-marca-500 text-white' : 'border-white/10 text-zinc-200'
                   }`}
                 >
                   <span className="text-[9px] uppercase font-medium">{diasSemanaCorto(d)}</span>
@@ -299,14 +299,14 @@ function DetalleReserva({ reserva, onCerrar }) {
             })}
           </div>
 
-          <div className="text-xs font-semibold text-zinc-700 mt-3 mb-2">Nueva hora</div>
+          <div className="text-xs font-semibold text-zinc-200 mt-3 mb-2">Nueva hora</div>
           <div className="grid grid-cols-4 gap-1.5 max-h-36 overflow-y-auto">
             {horarios.map((h) => (
               <button
                 key={h}
                 onClick={() => setNuevaHora(h)}
                 className={`py-2 rounded-lg text-xs font-medium border-2 transition ${
-                  nuevaHora === h ? 'border-marca-500 bg-marca-500 text-white' : 'border-zinc-200 text-zinc-700'
+                  nuevaHora === h ? 'border-marca-500 bg-marca-500 text-white' : 'border-white/10 text-zinc-200'
                 }`}
               >
                 {h}
@@ -317,14 +317,14 @@ function DetalleReserva({ reserva, onCerrar }) {
           <div className="mt-4 grid grid-cols-2 gap-2">
             <button
               onClick={() => { setReagendando(false); setNuevaHora(null) }}
-              className="bg-white border border-zinc-200 hover:bg-zinc-50 rounded-full py-2.5 text-xs font-medium text-zinc-700"
+              className="bg-nocturno-500 border border-white/10 hover:bg-white/5 rounded-full py-2.5 text-xs font-medium text-zinc-200"
             >
               Cancelar
             </button>
             <button
               disabled={!nuevaHora || guardando}
               onClick={confirmarReagenda}
-              className="bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-full py-2.5 text-xs font-semibold"
+              className="bg-marca-500 hover:bg-marca-600 disabled:bg-white/10 disabled:text-zinc-400 text-white rounded-full py-2.5 text-xs font-semibold"
             >
               {guardando ? 'Guardando…' : 'Confirmar nueva fecha'}
             </button>
@@ -334,14 +334,14 @@ function DetalleReserva({ reserva, onCerrar }) {
         <div className="mt-5 grid grid-cols-2 gap-2">
           <button
             onClick={() => setReagendando(true)}
-            className="bg-white border border-zinc-200 hover:bg-zinc-50 rounded-full py-2.5 text-xs font-medium text-zinc-700"
+            className="bg-nocturno-500 border border-white/10 hover:bg-white/5 rounded-full py-2.5 text-xs font-medium text-zinc-200"
           >
             Reagendar
           </button>
           <button
             onClick={marcarAtendido}
             disabled={guardando || atendido}
-            className="bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-full py-2.5 text-xs font-semibold"
+            className="bg-marca-500 hover:bg-marca-600 disabled:bg-white/10 disabled:text-zinc-400 text-white rounded-full py-2.5 text-xs font-semibold"
           >
             {atendido ? 'Atendido ✓' : guardando ? 'Guardando…' : 'Marcar atendido'}
           </button>
@@ -354,8 +354,8 @@ function DetalleReserva({ reserva, onCerrar }) {
 function Fila({ label, valor, destacado }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-zinc-500 text-xs">{label}</span>
-      <span className={destacado ? 'font-semibold text-zinc-900' : 'text-zinc-900'}>{valor}</span>
+      <span className="text-zinc-400 text-xs">{label}</span>
+      <span className={destacado ? 'font-semibold text-white' : 'text-white'}>{valor}</span>
     </div>
   )
 }
@@ -364,18 +364,18 @@ function ResumenDia({ reservas, total }) {
   const inapp = reservas.filter((r) => r.metodoPago === 'inapp').reduce((s, r) => s + r.precio, 0)
   const local = reservas.filter((r) => r.metodoPago === 'local').reduce((s, r) => s + r.precio, 0)
   return (
-    <div className="bg-white rounded-2xl border border-zinc-100 p-5 sticky top-5">
-      <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">Resumen del día</div>
-      <div className="mt-2 text-3xl font-semibold text-zinc-900">{formatoUSD(total)}</div>
-      <div className="text-xs text-zinc-500">{reservas.length} reservas programadas</div>
+    <div className="bg-nocturno-500 rounded-2xl border border-white/10 p-5 sticky top-5">
+      <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium">Resumen del día</div>
+      <div className="mt-2 text-3xl font-semibold text-white">{formatoUSD(total)}</div>
+      <div className="text-xs text-zinc-400">{reservas.length} reservas programadas</div>
 
       <div className="mt-5 space-y-3">
         <FilaPago icono={CreditCard} label="Pago en app" valor={formatoUSD(inapp)} />
         <FilaPago icono={Wallet} label="Pago en local" valor={formatoUSD(local)} />
       </div>
 
-      <div className="mt-5 pt-5 border-t border-zinc-100">
-        <p className="text-xs text-zinc-500">
+      <div className="mt-5 pt-5 border-t border-white/10">
+        <p className="text-xs text-zinc-400">
           Selecciona una reserva en la agenda para ver sus detalles.
         </p>
       </div>
@@ -420,7 +420,7 @@ function BannerPromocion() {
         </div>
         <Link
           href="/negocio/promocion"
-          className="shrink-0 bg-white text-marca-600 hover:bg-amber-50 font-semibold text-sm px-5 py-2.5 rounded-full flex items-center gap-1.5 shadow-md transition"
+          className="shrink-0 bg-nocturno-500 text-marca-600 hover:bg-amber-500/10 font-semibold text-sm px-5 py-2.5 rounded-full flex items-center gap-1.5 shadow-md transition"
         >
           <TrendingUp className="w-4 h-4" /> Ver planes y destaques
         </Link>
@@ -432,10 +432,10 @@ function BannerPromocion() {
 function FilaPago({ icono: Icono, label, valor }) {
   return (
     <div className="flex items-center justify-between text-sm">
-      <span className="flex items-center gap-2 text-zinc-600">
+      <span className="flex items-center gap-2 text-zinc-300">
         <Icono className="w-4 h-4 text-zinc-400" /> {label}
       </span>
-      <span className="font-semibold text-zinc-900">{valor}</span>
+      <span className="font-semibold text-white">{valor}</span>
     </div>
   )
 }

@@ -46,16 +46,16 @@ function CuentaInner() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
-      <header className="sticky top-0 z-20 bg-white border-b border-zinc-100">
+    <div className="min-h-screen bg-white/5 flex flex-col">
+      <header className="sticky top-0 z-20 bg-nocturno-500 border-b border-white/10">
         <div className="h-14 px-4 flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="w-9 h-9 grid place-items-center rounded-full hover:bg-zinc-100"
+            className="w-9 h-9 grid place-items-center rounded-full hover:bg-white/10"
           >
-            <ArrowLeft className="w-5 h-5 text-zinc-900" />
+            <ArrowLeft className="w-5 h-5 text-white" />
           </button>
-          <div className="text-sm font-medium text-zinc-900">
+          <div className="text-sm font-medium text-white">
             {modo === 'registro' ? 'Crear cuenta' : 'Iniciar sesión'}
           </div>
         </div>
@@ -63,21 +63,21 @@ function CuentaInner() {
 
       <div className="flex-1 px-5 py-8">
         <div className="max-w-md mx-auto">
-          <h1 className="text-2xl font-semibold text-zinc-900">
+          <h1 className="text-2xl font-semibold text-white">
             {modo === 'registro' ? 'Crea tu cuenta' : 'Bienvenido de vuelta'}
           </h1>
-          <p className="text-sm text-zinc-500 mt-1">
+          <p className="text-sm text-zinc-400 mt-1">
             {modo === 'registro'
               ? 'Necesitas una cuenta para reservar. Tu nombre aparecerá en la reserva del negocio.'
               : 'Entra para ver y gestionar tus reservas.'}
           </p>
 
           {/* Toggle */}
-          <div className="mt-6 bg-zinc-100 rounded-full p-1 grid grid-cols-2 gap-1">
+          <div className="mt-6 bg-white/10 rounded-full p-1 grid grid-cols-2 gap-1">
             <button
               onClick={() => { setModo('registro'); setError(null) }}
               className={`py-2 rounded-full text-sm font-medium transition ${
-                modo === 'registro' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
+                modo === 'registro' ? 'bg-nocturno-500 text-white shadow-sm' : 'text-zinc-400'
               }`}
             >
               Crear cuenta
@@ -85,16 +85,16 @@ function CuentaInner() {
             <button
               onClick={() => { setModo('login'); setError(null) }}
               className={`py-2 rounded-full text-sm font-medium transition ${
-                modo === 'login' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
+                modo === 'login' ? 'bg-nocturno-500 text-white shadow-sm' : 'text-zinc-400'
               }`}
             >
               Iniciar sesión
             </button>
           </div>
 
-          <form onSubmit={enviar} className="mt-6 bg-white rounded-3xl border border-zinc-100 p-6 shadow-suave space-y-4">
+          <form onSubmit={enviar} className="mt-6 bg-nocturno-500 rounded-3xl border border-white/10 p-6 shadow-suave space-y-4">
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3 text-sm text-red-700">
+              <div className="bg-red-500/10 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3 text-sm text-red-700">
                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                 <div className="text-xs">{error}</div>
               </div>
@@ -108,7 +108,7 @@ function CuentaInner() {
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   placeholder="Tu nombre"
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 pl-11 pr-4 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-white transition"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-nocturno-400 transition"
                 />
               </Campo>
             )}
@@ -120,7 +120,7 @@ function CuentaInner() {
                   value={celular}
                   onChange={(e) => setCelular(e.target.value)}
                   placeholder="+593 99 123 4567"
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 pl-11 pr-4 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-white transition"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-nocturno-400 transition"
                 />
               </Campo>
             )}
@@ -133,7 +133,7 @@ function CuentaInner() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 pl-11 pr-4 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-white transition"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-nocturno-400 transition"
               />
             </Campo>
 
@@ -144,14 +144,14 @@ function CuentaInner() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
-                className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 pl-11 pr-4 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-white transition"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-nocturno-400 transition"
               />
             </Campo>
 
             <button
               type="submit"
               disabled={cargando}
-              className="w-full bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-semibold py-3 rounded-full transition flex items-center justify-center gap-2"
+              className="w-full bg-marca-500 hover:bg-marca-600 disabled:bg-white/10 disabled:text-zinc-400 text-white font-semibold py-3 rounded-full transition flex items-center justify-center gap-2"
             >
               {cargando && <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
               {cargando ? 'Procesando…' : modo === 'registro' ? 'Crear cuenta y continuar' : 'Iniciar sesión'}
@@ -173,7 +173,7 @@ function CuentaInner() {
 function Campo({ icono: Icono, label, children }) {
   return (
     <div>
-      <label className="text-sm font-medium text-zinc-700">{label}</label>
+      <label className="text-sm font-medium text-zinc-200">{label}</label>
       <div className="mt-2 relative">
         <Icono className="w-4 h-4 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" />
         {children}

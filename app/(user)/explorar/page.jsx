@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic'
 import { useSearchParams } from 'next/navigation'
 import {
   Search, MapPin, X, Map as MapIcon, List, Locate, Star, Zap,
-  ChevronRight, Sparkles, Heart, Calendar, Crown
+  ChevronRight, Sparkles, Heart, Calendar
 } from 'lucide-react'
 import { useNegocios } from '@/lib/data/negocios'
 import { CATEGORIAS } from '@/lib/data/categorias'
@@ -19,7 +19,7 @@ import FlujoUbicacion from '@/components/FlujoUbicacion'
 const MapView = dynamic(() => import('@/components/MapView'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-zinc-100 grid place-items-center">
+    <div className="w-full h-full bg-white/10 grid place-items-center">
       <div className="text-zinc-400 text-sm flex items-center gap-2">
         <div className="w-4 h-4 border-2 border-marca-500 border-t-transparent rounded-full animate-spin" />
         Cargando mapa...
@@ -115,7 +115,7 @@ export default function ExplorarPage() {
   }, [focusId, focusAplicado, NEGOCIOS, elegirCiudad])
 
   return (
-    <div className="relative h-screen overflow-hidden bg-zinc-100">
+    <div className="relative h-screen overflow-hidden bg-white/10">
       {/* Flujo de ubicación: soft-prompt → permiso → selector de ciudad */}
       <FlujoUbicacion />
 
@@ -124,22 +124,22 @@ export default function ExplorarPage() {
         <div className="flex gap-2 pointer-events-auto">
           <button
             onClick={reabrirFlujo}
-            className="flex-1 bg-white rounded-2xl shadow-flotante p-2.5 flex items-center gap-2 border border-zinc-100 text-left hover:border-marca-200 transition"
+            className="flex-1 bg-nocturno-500 rounded-2xl shadow-flotante p-2.5 flex items-center gap-2 border border-white/10 text-left hover:border-marca-200 transition"
             aria-label="Cambiar de ciudad"
           >
             <MapPin className="w-4 h-4 text-marca-500 shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="text-[9px] text-zinc-500 uppercase tracking-wide leading-tight">
+              <div className="text-[9px] text-zinc-400 uppercase tracking-wide leading-tight">
                 {gpsConcedido ? 'Estás en' : 'Explorando'}
               </div>
-              <div className="text-sm font-bold text-black leading-tight truncate">
+              <div className="text-sm font-bold text-white leading-tight truncate">
                 {ciudadActiva.nombre}, {ciudadActiva.pais}
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-zinc-300 shrink-0" />
           </button>
 
-          <div className="bg-white rounded-2xl shadow-flotante p-1 flex items-center border border-zinc-100">
+          <div className="bg-nocturno-500 rounded-2xl shadow-flotante p-1 flex items-center border border-white/10">
             <ToggleBtn activo={vista === 'mapa'} onClick={() => setVista('mapa')}>
               <MapIcon className="w-4 h-4" />
             </ToggleBtn>
@@ -149,7 +149,7 @@ export default function ExplorarPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-flotante p-2 flex items-center gap-2 pointer-events-auto border border-zinc-100">
+        <div className="bg-nocturno-500 rounded-2xl shadow-flotante p-2 flex items-center gap-2 pointer-events-auto border border-white/10">
           <Search className="w-4 h-4 text-zinc-400 ml-2" />
           <input
             value={busqueda}
@@ -160,7 +160,7 @@ export default function ExplorarPage() {
           {busqueda && (
             <button
               onClick={() => setBusqueda('')}
-              className="text-zinc-400 hover:text-zinc-700 p-1"
+              className="text-zinc-400 hover:text-zinc-200 p-1"
             >
               <X className="w-4 h-4" />
             </button>
@@ -240,7 +240,7 @@ export default function ExplorarPage() {
       {/* === VISTA LISTA === */}
       {vista === 'lista' && (
         <div
-          className="absolute inset-0 z-10 bg-zinc-50 overflow-y-auto pt-44"
+          className="absolute inset-0 z-10 bg-white/5 overflow-y-auto pt-44"
           style={{ paddingBottom: 'calc(5rem + var(--safe-bottom))' }}
         >
           <ListaCompleta negocios={negociosFiltrados} />
@@ -255,7 +255,7 @@ function ToggleBtn({ activo, onClick, children }) {
     <button
       onClick={onClick}
       className={`w-9 h-9 rounded-xl grid place-items-center transition ${
-        activo ? 'bg-black text-white' : 'text-zinc-600 hover:bg-zinc-100'
+        activo ? 'bg-black text-white' : 'text-zinc-300 hover:bg-white/10'
       }`}
     >
       {children}
@@ -269,8 +269,8 @@ function Pildora({ children, activo, onClick, color }) {
       onClick={onClick}
       className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition whitespace-nowrap shadow-sm ${
         activo
-          ? 'bg-black border-black text-white'
-          : 'bg-white border-zinc-200 text-zinc-700 hover:border-zinc-300'
+          ? 'bg-marca-500 border-marca-500 text-white'
+          : 'bg-nocturno-500 border-white/10 text-zinc-200 hover:border-white/20'
       }`}
     >
       {!activo && color && (
@@ -335,17 +335,17 @@ function PanelNegocio({ negocio, visible, onCerrar }) {
         style={{ bottom: 'calc(5rem + var(--safe-bottom))' }}
         aria-hidden={!visible}
       >
-        <div className="bg-white rounded-3xl overflow-hidden shadow-flotante border-2 border-black/10">
+        <div className="bg-nocturno-500 rounded-3xl overflow-hidden shadow-flotante border-2 border-white/20/10">
           {/* Banner destacado */}
           {negocio._destacado && (
             <div className="bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-white px-4 py-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
-              <Crown className="w-4 h-4 fill-white" />
+              <Sparkles className="w-4 h-4 fill-white" />
               Negocio destacado
             </div>
           )}
 
           {/* Foto */}
-          <div className="relative h-44 bg-zinc-100">
+          <div className="relative h-44 bg-white/10">
             <Image
               src={negocio.imagen}
               alt={negocio.nombre}
@@ -357,16 +357,16 @@ function PanelNegocio({ negocio, visible, onCerrar }) {
 
             <button
               onClick={onCerrar}
-              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 backdrop-blur grid place-items-center text-black shadow-md hover:bg-white"
+              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 backdrop-blur grid place-items-center text-white shadow-md hover:bg-nocturno-400"
             >
               <X className="w-4 h-4" />
             </button>
 
             <button
               onClick={() => toggleFavorito(negocio.id)}
-              className="absolute top-3 right-14 w-9 h-9 rounded-full bg-white/95 backdrop-blur grid place-items-center shadow-md hover:bg-white"
+              className="absolute top-3 right-14 w-9 h-9 rounded-full bg-white/95 backdrop-blur grid place-items-center shadow-md hover:bg-nocturno-400"
             >
-              <Heart className={`w-4 h-4 ${esFav ? 'fill-red-500 text-red-500' : 'text-black'}`} />
+              <Heart className={`w-4 h-4 ${esFav ? 'fill-red-500 text-red-500' : 'text-white'}`} />
             </button>
 
             <div className="absolute bottom-3 left-3 right-3 flex items-center gap-1.5">
@@ -386,32 +386,32 @@ function PanelNegocio({ negocio, visible, onCerrar }) {
 
           {/* Contenido */}
           <div className="p-4">
-            <h3 className="font-bold text-lg text-black leading-tight">
+            <h3 className="font-bold text-lg text-white leading-tight">
               {negocio.nombre}
             </h3>
 
             <div className="mt-2 flex items-center gap-3 text-sm">
-              <span className="flex items-center gap-1 text-zinc-800">
+              <span className="flex items-center gap-1 text-zinc-100">
                 <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
                 <strong>{negocio.rating}</strong>
                 <span className="text-zinc-400 text-xs">({negocio.reviews})</span>
               </span>
               <span className="text-zinc-300">·</span>
-              <span className="flex items-center gap-1 text-zinc-800">
+              <span className="flex items-center gap-1 text-zinc-100">
                 <MapPin className="w-3.5 h-3.5 text-marca-500" />
                 <strong>{formatoDistancia(negocio._dist || 0)}</strong>
                 <span className="text-zinc-400 text-xs">de ti</span>
               </span>
             </div>
 
-            <div className="mt-2 text-xs text-zinc-500">
+            <div className="mt-2 text-xs text-zinc-400">
               {negocio.barrio} · {(negocio.horario || '').split('·')[0].trim()}
             </div>
 
             <div className="mt-4 grid grid-cols-[1fr_2fr] gap-2">
               <Link
                 href={`/explorar/${negocio.id}`}
-                className="bg-white border-2 border-black hover:bg-zinc-50 text-black text-center text-sm font-bold py-2.5 rounded-full transition"
+                className="bg-nocturno-500 border-2 border-white/20 hover:bg-white/5 text-white text-center text-sm font-bold py-2.5 rounded-full transition"
               >
                 Ver detalles
               </Link>
@@ -434,18 +434,18 @@ function ListaCompleta({ negocios }) {
     <div className="px-3 space-y-3">
       {negocios.some((n) => n._destacado) && (
         <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 px-1">
-          <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
+          <Sparkles className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
           <span className="uppercase tracking-wide">Destacados</span>
         </div>
       )}
 
       {negocios.length === 0 ? (
         <div className="text-center py-16">
-          <div className="w-16 h-16 mx-auto bg-zinc-100 rounded-full grid place-items-center text-zinc-400">
+          <div className="w-16 h-16 mx-auto bg-white/10 rounded-full grid place-items-center text-zinc-400">
             <Search className="w-6 h-6" />
           </div>
-          <h3 className="mt-4 font-bold text-black">Sin resultados</h3>
-          <p className="mt-1 text-sm text-zinc-500">
+          <h3 className="mt-4 font-bold text-white">Sin resultados</h3>
+          <p className="mt-1 text-sm text-zinc-400">
             Prueba con otra categoría o término de búsqueda.
           </p>
         </div>
@@ -461,13 +461,13 @@ function FilaNegocio({ negocio }) {
   return (
     <Link
       href={`/explorar/${negocio.id}`}
-      className={`flex gap-3 bg-white rounded-2xl p-3 border transition ${
+      className={`flex gap-3 bg-nocturno-500 rounded-2xl p-3 border transition ${
         negocio._destacado
           ? 'border-amber-400 ring-2 ring-amber-200'
-          : 'border-zinc-100 hover:border-marca-300'
+          : 'border-white/10 hover:border-marca-300'
       }`}
     >
-      <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-zinc-100 shrink-0">
+      <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-white/10 shrink-0">
         <Image
           src={negocio.imagen}
           alt={negocio.nombre}
@@ -477,7 +477,7 @@ function FilaNegocio({ negocio }) {
         />
         {negocio._destacado && (
           <div className="absolute -top-1 -left-1 bg-gradient-to-br from-amber-400 to-amber-600 text-white p-1 rounded-lg shadow-md">
-            <Crown className="w-3 h-3 fill-white" />
+            <Sparkles className="w-3 h-3 fill-white" />
           </div>
         )}
       </div>
@@ -491,23 +491,23 @@ function FilaNegocio({ negocio }) {
             {categoria?.nombre}
           </span>
           {negocio.aceptaAhora && (
-            <span className="bg-marca-100 text-marca-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+            <span className="bg-marca-500/15 text-marca-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
               <Zap className="w-2.5 h-2.5 fill-marca-600" /> AHORA
             </span>
           )}
         </div>
-        <h3 className="mt-0.5 font-bold text-sm text-black leading-tight truncate">
+        <h3 className="mt-0.5 font-bold text-sm text-white leading-tight truncate">
           {negocio.nombre}
         </h3>
-        <div className="mt-1 flex items-center gap-2 text-xs text-zinc-500">
+        <div className="mt-1 flex items-center gap-2 text-xs text-zinc-400">
           <span className="flex items-center gap-0.5">
             <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-            <strong className="text-zinc-700">{negocio.rating}</strong>
+            <strong className="text-zinc-200">{negocio.rating}</strong>
           </span>
           <span>·</span>
           <span>{negocio.barrio}</span>
         </div>
-        <div className="mt-1 text-xs text-zinc-500 truncate">{negocio.descripcion}</div>
+        <div className="mt-1 text-xs text-zinc-400 truncate">{negocio.descripcion}</div>
       </div>
 
       <div className="text-right shrink-0 flex flex-col items-end justify-between">

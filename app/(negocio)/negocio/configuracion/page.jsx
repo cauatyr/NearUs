@@ -31,7 +31,7 @@ export default function ConfiguracionPage() {
   if (!negocio) {
     return (
       <div className="p-5 md:p-8">
-        <p className="text-zinc-500">Cargando negocio…</p>
+        <p className="text-zinc-400">Cargando negocio…</p>
       </div>
     )
   }
@@ -59,13 +59,13 @@ export default function ConfiguracionPage() {
     <div className="p-5 md:p-8 max-w-3xl">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900">Configuración</h1>
-          <p className="text-sm text-zinc-500">Editá la foto principal, el contacto y el horario de tu negocio.</p>
+          <h1 className="text-2xl font-semibold text-white">Configuración</h1>
+          <p className="text-sm text-zinc-400">Editá la foto principal, el contacto y el horario de tu negocio.</p>
         </div>
         <button
           onClick={guardar}
           disabled={sinCambios || estado === 'guardando'}
-          className="bg-marca-500 hover:bg-marca-600 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white font-semibold px-5 py-2.5 rounded-full flex items-center gap-2"
+          className="bg-marca-500 hover:bg-marca-600 disabled:bg-white/10 disabled:text-zinc-400 disabled:cursor-not-allowed text-white font-semibold px-5 py-2.5 rounded-full flex items-center gap-2"
         >
           {estado === 'guardando' && (
             <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -76,7 +76,7 @@ export default function ConfiguracionPage() {
       </div>
 
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3 text-sm text-red-700">
+        <div className="mb-4 bg-red-500/10 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3 text-sm text-red-700">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div>
             <div className="font-semibold">No pudimos guardar los cambios</div>
@@ -87,7 +87,7 @@ export default function ConfiguracionPage() {
 
       {/* Logo (readonly) */}
       <Seccion titulo="Logo del negocio" descripcion="La identidad visual de tu marca en el mapa. No se edita aquí.">
-        <div className="flex items-center gap-4 bg-zinc-50 border border-zinc-200 rounded-2xl p-4">
+        <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-4">
           <div
             className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 grid place-items-center border-2 border-white shadow"
             style={{ backgroundColor: categoria?.color || '#2BACE2' }}
@@ -99,9 +99,9 @@ export default function ConfiguracionPage() {
             />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-zinc-900 text-sm truncate">{negocio.nombre}</div>
-            <div className="mt-0.5 text-xs text-zinc-500">{categoria?.nombre} · {negocio.barrio}</div>
-            <div className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-zinc-500 bg-white border border-zinc-200 rounded-full px-2.5 py-1">
+            <div className="font-semibold text-white text-sm truncate">{negocio.nombre}</div>
+            <div className="mt-0.5 text-xs text-zinc-400">{categoria?.nombre} · {negocio.barrio}</div>
+            <div className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-zinc-400 bg-nocturno-500 border border-white/10 rounded-full px-2.5 py-1">
               <Lock className="w-3 h-3" /> Solo se cambia desde soporte
             </div>
           </div>
@@ -143,9 +143,9 @@ export default function ConfiguracionPage() {
 
 function Seccion({ titulo, descripcion, children }) {
   return (
-    <section className="mb-6 bg-white rounded-2xl border border-zinc-100 p-5">
-      <h2 className="text-base font-semibold text-zinc-900">{titulo}</h2>
-      <p className="text-xs text-zinc-500 mt-0.5">{descripcion}</p>
+    <section className="mb-6 bg-nocturno-500 rounded-2xl border border-white/10 p-5">
+      <h2 className="text-base font-semibold text-white">{titulo}</h2>
+      <p className="text-xs text-zinc-400 mt-0.5">{descripcion}</p>
       <div className="mt-4">{children}</div>
     </section>
   )
@@ -182,11 +182,11 @@ function CampoFoto({ valor, onChange }) {
     <div>
       {valor ? (
         <div className="space-y-3">
-          <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200">
+          <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-white/10 border border-white/10">
             <img src={valor} alt="Foto del negocio" className="w-full h-full object-cover" />
           </div>
           <div className="flex items-center gap-2">
-            <label className="cursor-pointer bg-white border border-zinc-200 hover:bg-zinc-50 rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2">
+            <label className="cursor-pointer bg-nocturno-500 border border-white/10 hover:bg-white/5 rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2">
               <ImagePlus className="w-4 h-4" />
               Cambiar foto
               <input
@@ -210,8 +210,8 @@ function CampoFoto({ valor, onChange }) {
         <label
           className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-2xl py-10 px-4 cursor-pointer transition ${
             procesando
-              ? 'border-marca-300 bg-marca-50'
-              : 'border-zinc-300 hover:border-marca-500 hover:bg-marca-50'
+              ? 'border-marca-300 bg-marca-500/10'
+              : 'border-white/20 hover:border-marca-500 hover:bg-marca-500/10'
           }`}
         >
           <input
@@ -229,8 +229,8 @@ function CampoFoto({ valor, onChange }) {
           ) : (
             <>
               <ImagePlus className="w-8 h-8 text-zinc-400" />
-              <span className="text-sm font-medium text-zinc-700">Sube una foto del negocio</span>
-              <span className="text-xs text-zinc-500">Se recomienda formato horizontal · máx. 8 MB</span>
+              <span className="text-sm font-medium text-zinc-200">Sube una foto del negocio</span>
+              <span className="text-xs text-zinc-400">Se recomienda formato horizontal · máx. 8 MB</span>
             </>
           )}
         </label>
@@ -243,7 +243,7 @@ function CampoFoto({ valor, onChange }) {
 function CampoInput({ icono: Icono, etiqueta, placeholder, valor, onChange }) {
   return (
     <div>
-      <label className="text-sm font-medium text-zinc-700">{etiqueta}</label>
+      <label className="text-sm font-medium text-zinc-200">{etiqueta}</label>
       <div className="mt-2 relative">
         {Icono && <Icono className="w-4 h-4 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" />}
         <input
@@ -251,7 +251,7 @@ function CampoInput({ icono: Icono, etiqueta, placeholder, valor, onChange }) {
           value={valor}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 pl-11 pr-4 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-white transition"
+          className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-zinc-400 focus:outline-none focus:border-marca-500 focus:bg-nocturno-400 transition"
         />
       </div>
     </div>
