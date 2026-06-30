@@ -1,11 +1,12 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Map, Zap, User } from 'lucide-react'
+import { Home, Map, Zap, User } from 'lucide-react'
 
 const ITEMS = [
+  { href: '/inicio', icono: Home, label: 'Inicio' },
   { href: '/ahora', icono: Zap, label: 'Near you' },
-  { href: '/explorar', icono: Map, label: 'Explorar' },
+  { href: '/explorar', icono: Map, label: 'Mapa' },
   { href: '/perfil', icono: User, label: 'Mi perfil' }
 ]
 
@@ -16,7 +17,7 @@ export default function BottomNav() {
       className="fixed bottom-0 left-0 right-0 z-30 bg-nocturno-500 border-t border-white/10"
       style={{ paddingBottom: 'var(--safe-bottom)' }}
     >
-      <div className="max-w-md mx-auto h-16 grid grid-cols-3">
+      <div className="max-w-md mx-auto h-16 grid grid-cols-4">
         {ITEMS.map((it) => {
           const activo = pathname?.startsWith(it.href)
           return (

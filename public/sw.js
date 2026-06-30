@@ -3,8 +3,8 @@
  * Estrategia: network-first con fallback a cache para soporte offline básico.
  */
 
-const CACHE_VERSION = 'nearus-v2'
-const RUTAS_PRECARGA = ['/', '/perfil', '/explorar', '/onboarding']
+const CACHE_VERSION = 'nearus-v3'
+const RUTAS_PRECARGA = ['/', '/inicio', '/perfil', '/explorar', '/onboarding']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

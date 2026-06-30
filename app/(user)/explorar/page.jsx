@@ -34,8 +34,9 @@ const DESTACADOS_IDS = ['n2', 'n13', 'n9']
 export default function ExplorarPage() {
   const searchParams = useSearchParams()
   const focusId = searchParams.get('focus')
-  const [busqueda, setBusqueda] = useState('')
-  const [categoria, setCategoria] = useState(null)
+  // ?q= y ?categoria= vienen de la home (búsqueda / chips de categoría)
+  const [busqueda, setBusqueda] = useState(() => searchParams.get('q') || '')
+  const [categoria, setCategoria] = useState(() => searchParams.get('categoria') || null)
   const [seleccionado, setSeleccionado] = useState(null)
   const [vista, setVista] = useState('mapa')
   const [focusAplicado, setFocusAplicado] = useState(false)

@@ -22,7 +22,7 @@ export default function LandingPage() {
               <span className="sm:hidden">Empresa</span>
             </Link>
             <Link
-              href="/perfil"
+              href="/inicio"
               className="bg-marca-500 hover:bg-marca-600 text-white text-sm font-bold px-5 py-2.5 rounded-full transition"
             >
               Abrir app
@@ -210,7 +210,7 @@ export default function LandingPage() {
             <span>· Hecho en Cuenca</span>
           </div>
           <div className="flex gap-5">
-            <Link href="/perfil" className="hover:text-white font-medium">App</Link>
+            <Link href="/inicio" className="hover:text-white font-medium">App</Link>
             <Link href="/onboarding" className="hover:text-white font-medium">Negocios</Link>
             <Link href="/login" className="hover:text-white font-medium">Acceder al panel</Link>
           </div>
