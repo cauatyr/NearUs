@@ -61,8 +61,8 @@ export default function MapaPin({ lat, lng, onCambio }) {
         className="h-64 w-full rounded-2xl overflow-hidden z-0"
       >
         <TileLayer
-          attribution='&copy; OpenStreetMap, &copy; CARTO'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; OpenStreetMap'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <ClickHandler onCambio={onCambio} />
         <SeguirPin lat={lat} lng={lng} />

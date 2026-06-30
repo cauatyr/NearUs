@@ -160,8 +160,8 @@ function MapViewInner({
       scrollWheelZoom
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap, &copy; CARTO'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        attribution='&copy; OpenStreetMap'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
       <MapaRefCapture mapaRef={mapaRef} />
