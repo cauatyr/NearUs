@@ -32,7 +32,7 @@ export default function PromocionPage() {
             <span className="text-sm text-zinc-300">/ mes</span>
           </div>
           <div className="mt-1 text-xs text-amber-300 font-medium">
-            ⚡ MVP: {formatoUSD(9.99)} los primeros 3 meses
+            ⚡ Promo: {formatoUSD(9.99)} los primeros 3 meses
           </div>
         </div>
 

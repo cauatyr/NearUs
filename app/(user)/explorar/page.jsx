@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { useNegocios } from '@/lib/data/negocios'
 import { CATEGORIAS } from '@/lib/data/categorias'
-import { CIUDAD_DEFECTO, ciudadDeNegocio } from '@/lib/data/ciudades'
+import { CIUDAD_DEFECTO, detectarCiudad, ciudadMasCercana } from '@/lib/data/ciudades'
 import { useUbicacion, useReservas } from '@/lib/store'
 import { distanciaKm, formatoDistancia } from '@/lib/utils'
 import FlujoUbicacion from '@/components/FlujoUbicacion'
@@ -45,9 +45,15 @@ export default function ExplorarPage() {
 
   const ciudadActiva = ciudad || CIUDAD_DEFECTO
 
-  // Solo los negocios de la ciudad activa (su ciudad más cercana coincide).
+  // Solo los negocios que están DENTRO del radio de la ciudad activa. Un negocio
+  // lejos (otra región/país) no aparece acá — se queda en su propia zona.
   const negociosCiudad = useMemo(
-    () => NEGOCIOS.filter((n) => ciudadDeNegocio(n).id === ciudadActiva.id),
+    () =>
+      NEGOCIOS.filter(
+        (n) =>
+          distanciaKm(n.lat, n.lng, ciudadActiva.centro.lat, ciudadActiva.centro.lng) <=
+          ciudadActiva.radioKm
+      ),
     [NEGOCIOS, ciudadActiva]
   )
 
@@ -95,8 +101,12 @@ export default function ExplorarPage() {
     if (!focusId || focusAplicado) return
     const existe = NEGOCIOS.find((n) => n.id === focusId)
     if (!existe) return
-    // Aseguramos estar en la ciudad del negocio recién creado para que se vea.
-    elegirCiudad(ciudadDeNegocio(existe))
+    // Nos paramos en la ciudad real del negocio recién creado para que se vea
+    // (la que lo contiene por radio; si no, la más cercana).
+    const ciudadNegocio =
+      detectarCiudad(existe.lat, existe.lng) ||
+      ciudadMasCercana(existe.lat, existe.lng).ciudad
+    elegirCiudad(ciudadNegocio)
     setCategoria(null)
     setBusqueda('')
     setVista('mapa')

@@ -12,7 +12,7 @@ const PERIODOS = [
 ]
 
 // Comisión que NearUs descontará de cada servicio cobrado por la plataforma.
-// MVP: 10%. Al lanzamiento se ajustará — cambiar acá si cambia.
+// 10% — cambiar acá si cambia.
 const COMISION_NEARUS = 0.10
 
 export default function ReportesPage() {
@@ -225,7 +225,7 @@ export default function ReportesPage() {
         </div>
       </div>
 
-      {/* Nota MVP */}
+      {/* Nota de reportes en evolución */}
       <div className="mt-5 bg-marca-50 border border-marca-100 rounded-2xl p-4 flex items-start gap-3">
         <Clock className="w-5 h-5 text-marca-500 shrink-0 mt-0.5" />
         <div>
@@ -297,9 +297,8 @@ function SaldoRetirar({ saldo, bruto, comision }) {
         <div className="relative mt-4 flex items-start gap-2 bg-black/15 rounded-xl px-3 py-2.5 text-[11px] text-emerald-50/90">
           <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <span>
-            Comisión actual durante el MVP: <strong>{porcentaje}%</strong> sólo sobre pagos hechos
-            en la app. Los pagos en local no descuentan comisión. El porcentaje se ajustará
-            cuando NearUs salga oficialmente.
+            Comisión actual: <strong>{porcentaje}%</strong> sólo sobre pagos hechos
+            en la app. Los pagos en local no descuentan comisión.
           </span>
         </div>
       </div>

@@ -1,8 +1,9 @@
 'use client'
-import { useRef } from 'react'
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
+import { useRef, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { CIUDAD } from '@/lib/data/negocios'
+import { distanciaKm } from '@/lib/utils'
 
 const iconoPin = L.divIcon({
   className: 'pin-arrastrable',
@@ -33,6 +34,21 @@ function ClickHandler({ onCambio }) {
   return null
 }
 
+// Sigue al pin cuando salta lejos (ej: "Usar mi ubicación" que cae en otra
+// región/país). Recentra solo en saltos grandes (>1 km) para no pelear con los
+// drags/clicks finos dentro de la misma zona.
+function SeguirPin({ lat, lng }) {
+  const map = useMap()
+  const ultimo = useRef({ lat, lng })
+  useEffect(() => {
+    if (lat == null || lng == null) return
+    const d = distanciaKm(ultimo.current.lat, ultimo.current.lng, lat, lng)
+    ultimo.current = { lat, lng }
+    if (d > 1) map.setView([lat, lng], Math.max(map.getZoom(), 15))
+  }, [lat, lng, map])
+  return null
+}
+
 export default function MapaPin({ lat, lng, onCambio }) {
   const markerRef = useRef(null)
 
@@ -49,6 +65,7 @@ export default function MapaPin({ lat, lng, onCambio }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <ClickHandler onCambio={onCambio} />
+        <SeguirPin lat={lat} lng={lng} />
         <Marker
           position={[lat ?? CIUDAD.centro.lat, lng ?? CIUDAD.centro.lng]}
           icon={iconoPin}

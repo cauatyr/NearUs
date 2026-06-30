@@ -36,7 +36,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center">
           <div>
             <span className="inline-flex items-center gap-1.5 bg-black text-marca-500 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
-              <Sparkles className="w-3.5 h-3.5" /> MVP en Cuenca · Ecuador
+              <Sparkles className="w-3.5 h-3.5" /> Cuenca · Ecuador
             </span>
             <h1 className="mt-5 text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-black leading-[1.02]">
               Reserva servicios <span className="text-marca-500">cerca de ti</span>, en segundos.
@@ -179,7 +179,7 @@ export default function LandingPage() {
             ¿Tienes un negocio en Cuenca?
           </h2>
           <p className="mt-4 text-zinc-300 text-lg max-w-2xl mx-auto">
-            Únete a los 20 primeros negocios. Plan básico gratuito durante todo el MVP.
+            Suma tu negocio a NearUs. Plan básico gratuito.
             Sin compromiso, sin tarjeta.
           </p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3 justify-center items-center">

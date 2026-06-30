@@ -170,7 +170,7 @@ export default function OnboardingPage() {
         </div>
 
         <p className="text-center text-xs text-zinc-500 mt-6">
-          Plan básico gratuito durante el MVP · Sin compromisos
+          Plan básico gratuito · Sin compromisos
         </p>
       </div>
     </main>
@@ -417,7 +417,7 @@ function PasoUbicacion({ datos, actualizar, actualizarUbicacion, ubicacionTocada
           </p>
           {proximas.length > 0 && (
             <p className="text-marca-600 mt-1 text-xs">
-              En esta fase del MVP operamos en {activas.map((c) => c.nombre).join(', ')}.
+              Por ahora operamos en {activas.map((c) => c.nombre).join(', ')}.
               Próximamente {proximas.map((c) => c.nombre).join(', ')}.
             </p>
           )}
