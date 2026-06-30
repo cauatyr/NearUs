@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, memo } from 'react'
+import { useEffect, useRef, memo } from 'react'
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { CIUDAD } from '@/lib/data/negocios'
@@ -122,6 +122,21 @@ function VolarA({ pos, zoom = 16 }) {
   return null
 }
 
+// Recentra el mapa cuando cambia la ciudad activa (cambio instantáneo, no fly).
+// Guarda la última ciudad aplicada para no pelear con la selección de negocios.
+function CentrarEnCiudad({ centro, zoom }) {
+  const map = useMap()
+  const ultimo = useRef(null)
+  useEffect(() => {
+    if (!centro) return
+    const clave = `${centro.lat},${centro.lng}`
+    if (ultimo.current === clave) return
+    ultimo.current = clave
+    map.setView([centro.lat, centro.lng], zoom ?? map.getZoom())
+  }, [centro, zoom, map])
+  return null
+}
+
 function MapaRefCapture({ mapaRef }) {
   const map = useMap()
   useEffect(() => {
@@ -139,12 +154,14 @@ function MapViewInner({
   onSeleccionar,
   usuario,
   destacadosIds = [],
-  mapaRef
+  mapaRef,
+  centro = CIUDAD.centro,
+  zoom = CIUDAD.zoom
 }) {
   return (
     <MapContainer
-      center={[CIUDAD.centro.lat, CIUDAD.centro.lng]}
-      zoom={CIUDAD.zoom}
+      center={[centro.lat, centro.lng]}
+      zoom={zoom}
       style={{ height: '100%', width: '100%' }}
       zoomControl={false}
       scrollWheelZoom
@@ -155,6 +172,7 @@ function MapViewInner({
       />
 
       <MapaRefCapture mapaRef={mapaRef} />
+      <CentrarEnCiudad centro={centro} zoom={zoom} />
 
       {usuario && <Marker position={[usuario.lat, usuario.lng]} icon={iconoUsuario} />}
 
@@ -189,6 +207,8 @@ export default memo(MapViewInner, (prev, next) => {
     prev.seleccionado === next.seleccionado &&
     prev.negocios === next.negocios &&
     prev.usuario === next.usuario &&
-    prev.destacadosIds === next.destacadosIds
+    prev.destacadosIds === next.destacadosIds &&
+    prev.centro === next.centro &&
+    prev.zoom === next.zoom
   )
 })

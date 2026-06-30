@@ -11,8 +11,10 @@ import {
 } from 'lucide-react'
 import { useNegocios } from '@/lib/data/negocios'
 import { CATEGORIAS } from '@/lib/data/categorias'
+import { CIUDAD_DEFECTO, ciudadDeNegocio } from '@/lib/data/ciudades'
 import { useUbicacion, useReservas } from '@/lib/store'
 import { distanciaKm, formatoDistancia } from '@/lib/utils'
+import FlujoUbicacion from '@/components/FlujoUbicacion'
 
 const MapView = dynamic(() => import('@/components/MapView'), {
   ssr: false,
@@ -38,11 +40,19 @@ export default function ExplorarPage() {
   const [vista, setVista] = useState('mapa')
   const [focusAplicado, setFocusAplicado] = useState(false)
   const mapaRef = useRef(null)
-  const { posicion } = useUbicacion()
+  const { posicion, ciudad, gpsConcedido, reabrirFlujo, elegirCiudad } = useUbicacion()
   const NEGOCIOS = useNegocios()
 
+  const ciudadActiva = ciudad || CIUDAD_DEFECTO
+
+  // Solo los negocios de la ciudad activa (su ciudad más cercana coincide).
+  const negociosCiudad = useMemo(
+    () => NEGOCIOS.filter((n) => ciudadDeNegocio(n).id === ciudadActiva.id),
+    [NEGOCIOS, ciudadActiva]
+  )
+
   const negociosFiltrados = useMemo(() => {
-    let list = NEGOCIOS
+    let list = negociosCiudad
     if (categoria) list = list.filter((n) => n.categoria === categoria)
     if (busqueda) {
       const q = busqueda.toLowerCase()
@@ -63,7 +73,7 @@ export default function ExplorarPage() {
         if (a._destacado !== b._destacado) return b._destacado - a._destacado
         return a._dist - b._dist
       })
-  }, [busqueda, categoria, posicion])
+  }, [negociosCiudad, busqueda, categoria, posicion])
 
   const negocioSel = seleccionado
     ? negociosFiltrados.find((n) => n.id === seleccionado)
@@ -85,29 +95,39 @@ export default function ExplorarPage() {
     if (!focusId || focusAplicado) return
     const existe = NEGOCIOS.find((n) => n.id === focusId)
     if (!existe) return
+    // Aseguramos estar en la ciudad del negocio recién creado para que se vea.
+    elegirCiudad(ciudadDeNegocio(existe))
     setCategoria(null)
     setBusqueda('')
     setVista('mapa')
     setSeleccionado(focusId)
     setFocusAplicado(true)
-  }, [focusId, focusAplicado, NEGOCIOS])
+  }, [focusId, focusAplicado, NEGOCIOS, elegirCiudad])
 
   return (
     <div className="relative h-screen overflow-hidden bg-zinc-100">
+      {/* Flujo de ubicación: soft-prompt → permiso → selector de ciudad */}
+      <FlujoUbicacion />
+
       {/* === HEADER === */}
       <div className="absolute top-0 left-0 right-0 z-30 p-3 space-y-2 pointer-events-none">
         <div className="flex gap-2 pointer-events-auto">
-          <div className="flex-1 bg-white rounded-2xl shadow-flotante p-2.5 flex items-center gap-2 border border-zinc-100">
+          <button
+            onClick={reabrirFlujo}
+            className="flex-1 bg-white rounded-2xl shadow-flotante p-2.5 flex items-center gap-2 border border-zinc-100 text-left hover:border-marca-200 transition"
+            aria-label="Cambiar de ciudad"
+          >
             <MapPin className="w-4 h-4 text-marca-500 shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-[9px] text-zinc-500 uppercase tracking-wide leading-tight">
-                Estás en
+                {gpsConcedido ? 'Estás en' : 'Explorando'}
               </div>
-              <div className="text-sm font-bold text-black leading-tight">
-                Cuenca, Ecuador
+              <div className="text-sm font-bold text-black leading-tight truncate">
+                {ciudadActiva.nombre}, {ciudadActiva.pais}
               </div>
             </div>
-          </div>
+            <ChevronRight className="w-4 h-4 text-zinc-300 shrink-0" />
+          </button>
 
           <div className="bg-white rounded-2xl shadow-flotante p-1 flex items-center border border-zinc-100">
             <ToggleBtn activo={vista === 'mapa'} onClick={() => setVista('mapa')}>
@@ -142,7 +162,7 @@ export default function ExplorarPage() {
             Todos · {negociosFiltrados.length}
           </Pildora>
           {CATEGORIAS.map((c) => {
-            const count = NEGOCIOS.filter((n) => n.categoria === c.id).length
+            const count = negociosCiudad.filter((n) => n.categoria === c.id).length
             return (
               <Pildora
                 key={c.id}
@@ -168,9 +188,11 @@ export default function ExplorarPage() {
           negocios={negociosFiltrados}
           seleccionado={seleccionado}
           onSeleccionar={setSeleccionado}
-          usuario={posicion}
+          usuario={gpsConcedido ? posicion : null}
           destacadosIds={DESTACADOS_IDS}
           mapaRef={mapaRef}
+          centro={ciudadActiva.centro}
+          zoom={ciudadActiva.zoom}
         />
       </div>
 

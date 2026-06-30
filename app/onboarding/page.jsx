@@ -2,10 +2,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { ArrowLeft, Check, Store, MapPin, Phone, User, Mail, Lock, Sparkles, AlertCircle, ImagePlus, X } from 'lucide-react'
+import { ArrowLeft, Check, Store, MapPin, Phone, User, Mail, Lock, Sparkles, AlertCircle, ImagePlus, X, Navigation, Loader2 } from 'lucide-react'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { useDatosStore } from '@/lib/store-datos'
 import { CIUDAD } from '@/lib/data/negocios'
+import { CIUDADES, ciudadesActivas } from '@/lib/data/ciudades'
 import { comprimirImagen } from '@/lib/utils'
 import Logo from '@/components/Logo'
 
@@ -314,6 +315,36 @@ function CampoLogo({ valor, onChange }) {
 }
 
 function PasoUbicacion({ datos, actualizar, actualizarUbicacion, ubicacionTocada }) {
+  const [buscandoGps, setBuscandoGps] = useState(false)
+  const [gpsError, setGpsError] = useState(null)
+
+  const usarMiUbicacion = () => {
+    setGpsError(null)
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setGpsError('Tu navegador no permite geolocalización. Marca el pin a mano.')
+      return
+    }
+    setBuscandoGps(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        actualizarUbicacion(pos.coords.latitude, pos.coords.longitude)
+        setBuscandoGps(false)
+      },
+      (err) => {
+        setBuscandoGps(false)
+        setGpsError(
+          err && err.code === 1
+            ? 'Permiso de ubicación denegado. Marca el pin a mano en el mapa.'
+            : 'No pudimos obtener tu ubicación. Marca el pin a mano.'
+        )
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    )
+  }
+
+  const activas = ciudadesActivas()
+  const proximas = CIUDADES.filter((c) => !c.activa)
+
   return (
     <div>
       <div className="flex items-center gap-2 text-marca-500 mb-2">
@@ -339,7 +370,33 @@ function PasoUbicacion({ datos, actualizar, actualizarUbicacion, ubicacionTocada
 
         <div>
           <label className="text-sm font-medium text-zinc-700">Marca tu ubicación exacta</label>
-          <div className="mt-2">
+
+          <button
+            type="button"
+            onClick={usarMiUbicacion}
+            disabled={buscandoGps}
+            className="mt-2 w-full flex items-center justify-center gap-2 bg-marca-50 hover:bg-marca-100 disabled:opacity-60 text-marca-700 font-medium py-3 rounded-2xl border border-marca-100 transition"
+          >
+            {buscandoGps ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Buscando tu ubicación…
+              </>
+            ) : (
+              <>
+                <Navigation className="w-4 h-4" /> Usar mi ubicación actual
+              </>
+            )}
+          </button>
+          <p className="mt-1 text-xs text-zinc-500">
+            Te dejamos el pin donde estás; luego podés ajustarlo a la dirección exacta del local.
+          </p>
+          {gpsError && (
+            <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+              {gpsError}
+            </p>
+          )}
+
+          <div className="mt-3">
             <MapaPin lat={datos.lat} lng={datos.lng} onCambio={actualizarUbicacion} />
           </div>
           {!ubicacionTocada && (
@@ -355,10 +412,15 @@ function PasoUbicacion({ datos, actualizar, actualizarUbicacion, ubicacionTocada
         </div>
 
         <div className="bg-marca-50 border border-marca-100 rounded-2xl p-4 text-sm text-marca-700">
-          <p className="font-medium">Cuenca · Ecuador</p>
-          <p className="text-marca-600 mt-1 text-xs">
-            En esta fase del MVP solo aceptamos negocios en Cuenca. Próximamente Quito, Guayaquil y Bogotá.
+          <p className="font-medium">
+            {activas.map((c) => c.nombre).join(' · ')} · {activas[0]?.pais}
           </p>
+          {proximas.length > 0 && (
+            <p className="text-marca-600 mt-1 text-xs">
+              En esta fase del MVP operamos en {activas.map((c) => c.nombre).join(', ')}.
+              Próximamente {proximas.map((c) => c.nombre).join(', ')}.
+            </p>
+          )}
         </div>
       </div>
     </div>
