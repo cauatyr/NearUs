@@ -1,21 +1,34 @@
 'use client'
+import { useState } from 'react'
 import { useParams, useRouter, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { QRCodeSVG } from 'qrcode.react'
-import { Check, MapPin, Clock, Calendar, Phone, Home, X, Share2 } from 'lucide-react'
+import { Check, MapPin, Clock, Calendar, CalendarClock, Phone, Home, X, Share2 } from 'lucide-react'
 import { useReservas } from '@/lib/store'
+import { useCliente } from '@/lib/store-cliente'
 import { useDatosStore } from '@/lib/store-datos'
 import { obtenerNegocio, obtenerServicio } from '@/lib/data/negocios'
-import { formatoUSD, formatoDuracion, mesCorto, diasSemanaCorto } from '@/lib/utils'
+import { formatoUSD, formatoDuracion, mesCorto, diasSemanaCorto, estadoReserva } from '@/lib/utils'
+import TimelineReserva from '@/components/TimelineReserva'
+import ModalReagendar from '@/components/ModalReagendar'
+import FormResena from '@/components/FormResena'
 
 export default function ConfirmacionPage() {
   const { id } = useParams()
   const router = useRouter()
-  const { reservas, cancelarReserva } = useReservas()
+  const { reservas, cancelarReserva, reagendarReserva } = useReservas()
   const supaReservas = useDatosStore((s) => s.reservas)
+  const resenas = useDatosStore((s) => s.resenas)
   const actualizarReserva = useDatosStore((s) => s.actualizarReserva)
-  // Busca primero la copia local (instantánea tras reservar), luego Supabase (cross-device).
-  const reserva = reservas.find((r) => r.id === id) || supaReservas.find((r) => r.id === id)
+  const agregarResena = useDatosStore((s) => s.agregarResena)
+  const cliente = useCliente((s) => s.cliente)
+  const [reagendando, setReagendando] = useState(false)
+  // La copia local da campos instantáneos (ej. `hora`); la de Supabase es la
+  // fuente de verdad del ESTADO (completada/cancelada/reagendada desde otro
+  // dispositivo o el panel del negocio). Merge: local de base, Supabase encima.
+  const reservaLocal = reservas.find((r) => r.id === id)
+  const reservaSupa = supaReservas.find((r) => r.id === id)
+  const reserva = reservaSupa ? { ...reservaLocal, ...reservaSupa } : reservaLocal
 
   if (!reserva) {
     return (
@@ -35,6 +48,26 @@ export default function ConfirmacionPage() {
     reserva.hora ||
     `${String(fecha.getHours()).padStart(2, '0')}:${String(fecha.getMinutes()).padStart(2, '0')}`
   const cancelada = reserva.estado === 'cancelada'
+  const est = estadoReserva(reserva)
+  const yaReseño = resenas.some((r) => r.reservaId === reserva.id)
+  const puedeReseñar = est.clave === 'completada' && !yaReseño
+
+  const reagendar = async (fechaISO, horaNueva) => {
+    reagendarReserva(reserva.id, fechaISO, horaNueva)
+    await actualizarReserva(reserva.id, { fecha: fechaISO })
+    setReagendando(false)
+  }
+
+  const enviarResena = async (rating, comentario) => {
+    return await agregarResena({
+      negocioId: reserva.negocioId,
+      reservaId: reserva.id,
+      clienteUserId: cliente?.id || reserva.clienteUserId || null,
+      clienteNombre: cliente?.nombre || reserva.cliente?.nombre || 'Cliente',
+      rating,
+      comentario
+    })
+  }
 
   return (
     <div className="pb-32 bg-white/5">
@@ -55,9 +88,28 @@ export default function ConfirmacionPage() {
         </p>
       </div>
 
-      {/* QR */}
-      {!cancelada && (
-        <div className="px-5 -mt-5">
+      {/* Timeline en vivo (tracking estilo Uber) */}
+      <div className="px-5 -mt-5">
+        <TimelineReserva reserva={reserva} />
+      </div>
+
+      {/* Calificar la cita completada */}
+      {puedeReseñar && (
+        <div className="px-5 mt-4">
+          <FormResena onSubmit={enviarResena} />
+        </div>
+      )}
+      {est.clave === 'completada' && yaReseño && (
+        <div className="px-5 mt-4">
+          <div className="bg-acento-500/15 border border-acento-500/30 rounded-2xl p-4 text-center text-sm text-acento-500 font-medium">
+            ¡Gracias por tu reseña! ⭐
+          </div>
+        </div>
+      )}
+
+      {/* QR (solo mientras la cita no ocurrió) */}
+      {!cancelada && est.clave !== 'completada' && (
+        <div className="px-5 mt-4">
           <div className="bg-nocturno-500 rounded-3xl p-6 shadow-suave border border-white/10">
             <div className="text-center">
               <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium">
@@ -113,25 +165,35 @@ export default function ConfirmacionPage() {
         </div>
 
         {/* Acciones */}
-        {!cancelada && (
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <button
-              onClick={() => navigator.share?.({ title: 'Mi reserva NearUs', text: reserva.codigo })}
-              className="bg-nocturno-500 border border-white/10 rounded-2xl py-3 text-sm font-medium text-zinc-200 flex items-center justify-center gap-2 hover:bg-white/5"
-            >
-              <Share2 className="w-4 h-4" /> Compartir
-            </button>
-            <button
-              onClick={() => {
-                if (confirm('¿Cancelar esta reserva?')) {
-                  cancelarReserva(reserva.id)
-                  actualizarReserva(reserva.id, { estado: 'cancelada' })
-                }
-              }}
-              className="bg-nocturno-500 border border-red-200 text-red-600 hover:bg-red-500/10 rounded-2xl py-3 text-sm font-medium flex items-center justify-center gap-2"
-            >
-              <X className="w-4 h-4" /> Cancelar
-            </button>
+        {!cancelada && est.clave !== 'completada' && (
+          <div className="mt-4 space-y-2">
+            {(est.clave === 'confirmada' || est.clave === 'hoy') && (
+              <button
+                onClick={() => setReagendando(true)}
+                className="w-full bg-nocturno-500 border border-white/10 rounded-2xl py-3 text-sm font-semibold text-white flex items-center justify-center gap-2 hover:bg-white/5"
+              >
+                <CalendarClock className="w-4 h-4 text-marca-500" /> Reagendar cita
+              </button>
+            )}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => navigator.share?.({ title: 'Mi reserva NearUs', text: reserva.codigo })}
+                className="bg-nocturno-500 border border-white/10 rounded-2xl py-3 text-sm font-medium text-zinc-200 flex items-center justify-center gap-2 hover:bg-white/5"
+              >
+                <Share2 className="w-4 h-4" /> Compartir
+              </button>
+              <button
+                onClick={() => {
+                  if (confirm('¿Cancelar esta reserva?')) {
+                    cancelarReserva(reserva.id)
+                    actualizarReserva(reserva.id, { estado: 'cancelada' })
+                  }
+                }}
+                className="bg-nocturno-500 border border-red-200 text-red-600 hover:bg-red-500/10 rounded-2xl py-3 text-sm font-medium flex items-center justify-center gap-2"
+              >
+                <X className="w-4 h-4" /> Cancelar
+              </button>
+            </div>
           </div>
         )}
 
@@ -142,6 +204,10 @@ export default function ConfirmacionPage() {
           <Home className="w-4 h-4" /> Volver al inicio
         </Link>
       </div>
+
+      {reagendando && (
+        <ModalReagendar onClose={() => setReagendando(false)} onConfirm={reagendar} />
+      )}
     </div>
   )
 }

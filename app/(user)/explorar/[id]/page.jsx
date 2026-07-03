@@ -4,12 +4,13 @@ import { notFound, useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  ArrowLeft, Star, Clock, MapPin, Phone, Heart, Share2, Zap, Calendar, ChevronRight
+  ArrowLeft, Star, Clock, MapPin, Phone, Heart, Share2, Zap, Calendar, ChevronRight, BadgeCheck
 } from 'lucide-react'
 import { obtenerNegocio, serviciosDeNegocio, empleadosDeNegocio } from '@/lib/data/negocios'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { useReservas } from '@/lib/store'
-import { formatoUSD, formatoDuracion } from '@/lib/utils'
+import { useDatosStore } from '@/lib/store-datos'
+import { formatoUSD, formatoDuracion, tiempoRelativo } from '@/lib/utils'
 
 export default function DetalleNegocio() {
   const { id } = useParams()
@@ -17,6 +18,10 @@ export default function DetalleNegocio() {
   const negocio = obtenerNegocio(id)
   const servicios = serviciosDeNegocio(id)
   const empleados = empleadosDeNegocio(id)
+  const todasResenas = useDatosStore((s) => s.resenas)
+  const resenas = todasResenas
+    .filter((r) => r.negocioId === id)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
   const [tab, setTab] = useState('servicios')
 
   const { favoritos, toggleFavorito } = useReservas()
@@ -77,11 +82,17 @@ export default function DetalleNegocio() {
           {negocio.nombre}
         </h1>
         <div className="mt-2 flex items-center gap-3 text-sm text-zinc-300">
-          <span className="flex items-center gap-1">
-            <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-            <strong className="text-white">{negocio.rating}</strong>
-            <span className="text-zinc-400">({negocio.reviews} reseñas)</span>
-          </span>
+          {negocio.rating ? (
+            <span className="flex items-center gap-1">
+              <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+              <strong className="text-white">{negocio.rating}</strong>
+              <span className="text-zinc-400">({negocio.reviews} reseñas)</span>
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 text-marca-400 font-medium">
+              <Star className="w-4 h-4 text-marca-400" /> Nuevo en NearUs
+            </span>
+          )}
         </div>
 
         <p className="mt-4 text-zinc-200 leading-relaxed">{negocio.descripcion}</p>
@@ -170,28 +181,31 @@ export default function DetalleNegocio() {
           </div>
         )}
 
-        {tab === 'reseñas' && (
-          <div className="space-y-3">
-            <ResenaDemo
-              nombre="María Cabrera"
-              fecha="hace 3 días"
-              rating={5}
-              texto="Excelente atención. Reservé desde la app en 30 segundos, llegué y todo estaba listo. ¡Recomendado!"
-            />
-            <ResenaDemo
-              nombre="Pablo Andrade"
-              fecha="hace 1 semana"
-              rating={5}
-              texto="Por fin no tengo que escribir por WhatsApp para hacer una cita. NearUs cambió mi vida."
-            />
-            <ResenaDemo
-              nombre="Andrea Vélez"
-              fecha="hace 2 semanas"
-              rating={4}
-              texto="Buen servicio, ambiente agradable. Volvería sin duda."
-            />
-          </div>
-        )}
+        {tab === 'reseñas' &&
+          (resenas.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-14 h-14 mx-auto bg-white/10 rounded-full grid place-items-center text-zinc-400">
+                <Star className="w-6 h-6" />
+              </div>
+              <h3 className="mt-4 font-semibold text-white">Aún no hay reseñas</h3>
+              <p className="mt-1 text-sm text-zinc-400">
+                Sé el primero en reseñar después de tu cita.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {resenas.map((r) => (
+                <Resena
+                  key={r.id}
+                  nombre={r.clienteNombre}
+                  fecha={tiempoRelativo(r.createdAt)}
+                  rating={r.rating}
+                  texto={r.comentario}
+                  verificado={!!r.reservaId}
+                />
+              ))}
+            </div>
+          ))}
       </div>
 
       {/* CTA fija inferior */}
@@ -220,16 +234,24 @@ function Info({ icono: Icono, children }) {
   )
 }
 
-function ResenaDemo({ nombre, fecha, rating, texto }) {
+function Resena({ nombre, fecha, rating, texto, verificado }) {
+  const iniciales = (nombre || 'C').split(' ').map((n) => n[0]).slice(0, 2).join('')
   return (
     <div className="bg-nocturno-500 border border-white/10 rounded-2xl p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-full bg-marca-500/15 grid place-items-center text-marca-600 font-semibold text-xs">
-            {nombre.split(' ').map((n) => n[0]).join('')}
+            {iniciales}
           </div>
           <div>
-            <div className="text-sm font-medium text-white">{nombre}</div>
+            <div className="text-sm font-medium text-white flex items-center gap-1">
+              {nombre}
+              {verificado && (
+                <span title="Cliente verificado">
+                  <BadgeCheck className="w-3.5 h-3.5 text-marca-500" />
+                </span>
+              )}
+            </div>
             <div className="text-xs text-zinc-400">{fecha}</div>
           </div>
         </div>
@@ -238,13 +260,13 @@ function ResenaDemo({ nombre, fecha, rating, texto }) {
             <Star
               key={i}
               className={`w-3.5 h-3.5 ${
-                i < rating ? 'fill-amber-500 text-amber-500' : 'text-zinc-200'
+                i < rating ? 'fill-amber-500 text-amber-500' : 'text-zinc-600'
               }`}
             />
           ))}
         </div>
       </div>
-      <p className="mt-3 text-sm text-zinc-200 leading-relaxed">{texto}</p>
+      {texto && <p className="mt-3 text-sm text-zinc-200 leading-relaxed">{texto}</p>}
     </div>
   )
 }

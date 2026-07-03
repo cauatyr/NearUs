@@ -1,84 +1,73 @@
 'use client'
 import { useRef, useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
-import L from 'leaflet'
+import Map, { Marker } from 'react-map-gl/maplibre'
 import { CIUDAD } from '@/lib/data/negocios'
 import { distanciaKm } from '@/lib/utils'
 
-const iconoPin = L.divIcon({
-  className: 'pin-arrastrable',
-  html: `
-    <div style="
-      width:36px;height:36px;border-radius:50% 50% 50% 0;
-      background:#2BACE2;transform:rotate(-45deg);
-      border:3px solid white;box-shadow:0 6px 14px rgba(0,0,0,0.35);
-      position:relative;
-    ">
-      <div style="
-        position:absolute;top:7px;left:7px;
-        width:18px;height:18px;border-radius:50%;background:white;
-      "></div>
+const ESTILO_MAPA = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+
+function PinArrastrable() {
+  return (
+    <div
+      style={{
+        width: 36, height: 36, borderRadius: '50% 50% 50% 0',
+        background: '#2BACE2', transform: 'rotate(-45deg)',
+        border: '3px solid white', boxShadow: '0 6px 14px rgba(0,0,0,0.45)',
+        position: 'relative'
+      }}
+    >
+      <div
+        style={{ position: 'absolute', top: 7, left: 7, width: 18, height: 18, borderRadius: '50%', background: 'white' }}
+      />
     </div>
-  `,
-  iconSize: [36, 36],
-  iconAnchor: [18, 32]
-})
-
-// Click en el mapa también mueve el pin (mejor UX que sólo arrastrar)
-function ClickHandler({ onCambio }) {
-  useMapEvents({
-    click(e) {
-      onCambio(e.latlng.lat, e.latlng.lng)
-    }
-  })
-  return null
-}
-
-// Sigue al pin cuando salta lejos (ej: "Usar mi ubicación" que cae en otra
-// región/país). Recentra solo en saltos grandes (>1 km) para no pelear con los
-// drags/clicks finos dentro de la misma zona.
-function SeguirPin({ lat, lng }) {
-  const map = useMap()
-  const ultimo = useRef({ lat, lng })
-  useEffect(() => {
-    if (lat == null || lng == null) return
-    const d = distanciaKm(ultimo.current.lat, ultimo.current.lng, lat, lng)
-    ultimo.current = { lat, lng }
-    if (d > 1) map.setView([lat, lng], Math.max(map.getZoom(), 15))
-  }, [lat, lng, map])
-  return null
+  )
 }
 
 export default function MapaPin({ lat, lng, onCambio }) {
-  const markerRef = useRef(null)
+  const mapRef = useRef(null)
+  const ultimo = useRef({ lat, lng })
+
+  const latActual = lat ?? CIUDAD.centro.lat
+  const lngActual = lng ?? CIUDAD.centro.lng
+
+  // Sigue al pin cuando salta lejos (ej: "Usar mi ubicación" que cae en otra
+  // región). Sólo en saltos grandes (>1 km) para no pelear con drags finos.
+  useEffect(() => {
+    if (lat == null || lng == null || !mapRef.current) return
+    const d = distanciaKm(ultimo.current.lat ?? lat, ultimo.current.lng ?? lng, lat, lng)
+    ultimo.current = { lat, lng }
+    if (d > 1) {
+      mapRef.current.flyTo({
+        center: [lng, lat],
+        zoom: Math.max(mapRef.current.getZoom?.() ?? 14, 15),
+        duration: 800,
+        essential: true
+      })
+    }
+  }, [lat, lng])
 
   return (
     <div className="relative">
-      <MapContainer
-        center={[lat ?? CIUDAD.centro.lat, lng ?? CIUDAD.centro.lng]}
-        zoom={14}
-        scrollWheelZoom={false}
-        className="h-64 w-full rounded-2xl overflow-hidden z-0"
-      >
-        <TileLayer
-          attribution='&copy; OpenStreetMap'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <ClickHandler onCambio={onCambio} />
-        <SeguirPin lat={lat} lng={lng} />
-        <Marker
-          position={[lat ?? CIUDAD.centro.lat, lng ?? CIUDAD.centro.lng]}
-          icon={iconoPin}
-          draggable
-          ref={markerRef}
-          eventHandlers={{
-            dragend: () => {
-              const pos = markerRef.current?.getLatLng()
-              if (pos) onCambio(pos.lat, pos.lng)
-            }
-          }}
-        />
-      </MapContainer>
+      <div className="h-64 w-full rounded-2xl overflow-hidden">
+        <Map
+          ref={mapRef}
+          mapStyle={ESTILO_MAPA}
+          initialViewState={{ longitude: lngActual, latitude: latActual, zoom: 14 }}
+          style={{ width: '100%', height: '100%' }}
+          attributionControl={{ compact: true }}
+          onClick={(e) => onCambio(e.lngLat.lat, e.lngLat.lng)}
+        >
+          <Marker
+            longitude={lngActual}
+            latitude={latActual}
+            anchor="bottom"
+            draggable
+            onDragEnd={(e) => onCambio(e.lngLat.lat, e.lngLat.lng)}
+          >
+            <PinArrastrable />
+          </Marker>
+        </Map>
+      </div>
       <p className="mt-2 text-xs text-zinc-400 text-center">
         Toca el mapa o arrastra el pin para marcar tu ubicación
       </p>

@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import 'leaflet/dist/leaflet.css';
+@import 'maplibre-gl/dist/maplibre-gl.css';
 
 :root {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -24,15 +24,18 @@ body {
 
 button { font-family: inherit; }
 
-.leaflet-container {
-  font-family: inherit;
-  background: #E8ECF1;
+/* Mapa MapLibre — tema oscuro (estilo Dark Matter de CARTO) */
+.maplibregl-map { font-family: inherit; background: #0A0A0A; }
+.maplibregl-canvas { outline: none; }
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  background: rgba(24, 24, 27, 0.75) !important;
+  border-radius: 9999px;
 }
-
-.leaflet-control-attribution {
+.maplibregl-ctrl-attrib, .maplibregl-ctrl-attrib a {
   font-size: 9px !important;
-  background: rgba(255,255,255,0.7) !important;
+  color: #a1a1aa !important;
 }
+.maplibregl-ctrl-bottom-right, .maplibregl-ctrl-bottom-left { z-index: 1; }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

@@ -87,9 +87,12 @@ export default function ExplorarPage() {
     : null
 
   const centrarEnMi = () => {
-    if (mapaRef.current) {
-      mapaRef.current.flyTo([posicion.lat, posicion.lng], 15, { duration: 0.6 })
-    }
+    mapaRef.current?.flyTo({
+      center: [posicion.lng, posicion.lat],
+      zoom: 15,
+      duration: 800,
+      essential: true
+    })
   }
 
   useEffect(() => {
@@ -336,6 +339,10 @@ function PanelNegocio({ negocio, visible, onCerrar }) {
         style={{ bottom: 'calc(5rem + var(--safe-bottom))' }}
         aria-hidden={!visible}
       >
+        {/* Alça de arraste (estilo Uber) */}
+        <div className="flex justify-center pb-1.5">
+          <div className="w-10 h-1 rounded-full bg-white/40" />
+        </div>
         <div className="bg-nocturno-500 rounded-3xl overflow-hidden shadow-flotante border-2 border-white/20/10">
           {/* Banner destacado */}
           {negocio._destacado && (
@@ -358,14 +365,14 @@ function PanelNegocio({ negocio, visible, onCerrar }) {
 
             <button
               onClick={onCerrar}
-              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 backdrop-blur grid place-items-center text-white shadow-md hover:bg-nocturno-400"
+              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/50 backdrop-blur grid place-items-center text-white shadow-md hover:bg-black/70"
             >
               <X className="w-4 h-4" />
             </button>
 
             <button
               onClick={() => toggleFavorito(negocio.id)}
-              className="absolute top-3 right-14 w-9 h-9 rounded-full bg-white/95 backdrop-blur grid place-items-center shadow-md hover:bg-nocturno-400"
+              className="absolute top-3 right-14 w-9 h-9 rounded-full bg-black/50 backdrop-blur grid place-items-center shadow-md hover:bg-black/70"
             >
               <Heart className={`w-4 h-4 ${esFav ? 'fill-red-500 text-red-500' : 'text-white'}`} />
             </button>

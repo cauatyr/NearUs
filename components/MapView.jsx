@@ -1,106 +1,109 @@
 'use client'
-import { useEffect, useRef, memo } from 'react'
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
-import L from 'leaflet'
+import { useEffect, useRef, memo, useCallback } from 'react'
+import Map, { Marker } from 'react-map-gl/maplibre'
 import { CIUDAD } from '@/lib/data/negocios'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { logoPlaceholder } from '@/lib/utils'
+
+// Estilo vectorial CARTO "Dark Matter" — GRATIS, sin API key. Da la estética
+// minimalista/nocturna tipo Uber y combina con el tema oscuro del app.
+const ESTILO_MAPA = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
 
 function categoriaInfo(catId) {
   return CATEGORIAS.find((c) => c.id === catId) || { color: '#2BACE2', nombre: '' }
 }
 
-function iconoNegocio(negocio, opciones = {}) {
-  const { activo = false } = opciones
+// Extrusión de edificios 3D. Defensivo: si el source/source-layer no existe en
+// el estilo, el try/catch lo ignora y el mapa sigue perfecto (sólo sin 3D).
+function agregarEdificios3D(map) {
+  try {
+    if (map.getLayer('edificios-3d')) return
+    const style = map.getStyle()
+    const sources = style?.sources || {}
+    const vectorId = Object.keys(sources).find((id) => sources[id].type === 'vector')
+    if (!vectorId) return
+    const primerSymbol = (style.layers || []).find(
+      (l) => l.type === 'symbol' && l.layout && l.layout['text-field']
+    )?.id
+    map.addLayer(
+      {
+        id: 'edificios-3d',
+        type: 'fill-extrusion',
+        source: vectorId,
+        'source-layer': 'building',
+        minzoom: 14,
+        paint: {
+          'fill-extrusion-color': '#20242F',
+          'fill-extrusion-height': [
+            'interpolate', ['linear'], ['zoom'],
+            14, 0,
+            15.5, ['coalesce', ['get', 'render_height'], ['get', 'height'], 8]
+          ],
+          'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], ['get', 'min_height'], 0],
+          'fill-extrusion-opacity': 0.85
+        }
+      },
+      primerSymbol
+    )
+  } catch (_) {
+    /* estilo sin capa de edificios — no pasa nada */
+  }
+}
+
+// Pin del negocio: círculo con logo, color de categoría, puntero, y punto
+// pulsante ámbar si acepta "ahora". Crece + anillo azul cuando está activo.
+function PinNegocio({ negocio, activo }) {
   const cat = categoriaInfo(negocio.categoria)
-
-  // El destaque YA NO se muestra en el mapa: los pines de negocios destacados
-  // se ven iguales a los demás. El destaque aparece sólo al hacer clic (banner
-  // "Negocio destacado" en el panel).
-  const baseSize = 46
-  const size = activo ? baseSize + 14 : baseSize
-  const haloSize = 6
-  const haloColor = activo ? 'rgba(43,172,226,0.4)' : 'rgba(0,0,0,0)'
-
-  const halo = `box-shadow: 0 0 0 ${haloSize}px ${haloColor}, 0 10px 20px rgba(0,0,0,0.3);`
-  const ringColor = 'white'
-  const ringWidth = 2
-
-  const ahoraHTML = negocio.aceptaAhora
-    ? `<div style="position:absolute;top:-2px;left:-2px;width:18px;height:18px;background:#F59E0B;border:2px solid white;border-radius:50%;animation:pulso 1.8s ease-in-out infinite;z-index:4"></div>`
-    : ''
-
-  return L.divIcon({
-    className: 'pin-marca',
-    html: `
-      <div style="position:relative;width:${size}px;height:${size + 12}px;transform:translate(-50%,-100%);">
-        <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:12px solid ${cat.color}"></div>
-        <div style="
-          position:absolute;
-          bottom:10px;
-          left:50%;
-          transform:translateX(-50%) ${activo ? 'scale(1.05)' : ''};
-          width:${size}px;height:${size}px;border-radius:50%;
-          background:${cat.color};
-          border:${ringWidth}px solid ${ringColor};
-          ${halo}
-          overflow:hidden;
-          transition:all 0.2s;
-        ">
-          <img src="${negocio.logo || negocio.imagen || logoPlaceholder(negocio.nombre, cat.color)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.onerror=null;this.src='${logoPlaceholder(negocio.nombre, cat.color)}'" />
-        </div>
-        ${ahoraHTML}
+  const size = activo ? 58 : 46
+  return (
+    <div
+      style={{ position: 'relative', width: size, height: size + 12, transition: 'all 0.2s ease' }}
+    >
+      {/* Puntero */}
+      <div
+        style={{
+          position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+          width: 0, height: 0,
+          borderLeft: '8px solid transparent', borderRight: '8px solid transparent',
+          borderTop: `12px solid ${cat.color}`
+        }}
+      />
+      {/* Círculo con logo */}
+      <div
+        style={{
+          position: 'absolute', bottom: 10, left: '50%',
+          transform: `translateX(-50%) ${activo ? 'scale(1.03)' : ''}`,
+          width: size, height: size, borderRadius: '50%',
+          background: cat.color,
+          border: '2px solid white',
+          boxShadow: activo
+            ? '0 0 0 6px rgba(43,172,226,0.35), 0 12px 24px rgba(0,0,0,0.5)'
+            : '0 8px 18px rgba(0,0,0,0.45)',
+          overflow: 'hidden', transition: 'all 0.2s ease'
+        }}
+      >
+        <img
+          src={negocio.logo || negocio.imagen || logoPlaceholder(negocio.nombre, cat.color)}
+          alt=""
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          onError={(e) => {
+            e.currentTarget.onerror = null
+            e.currentTarget.src = logoPlaceholder(negocio.nombre, cat.color)
+          }}
+        />
       </div>
-    `,
-    iconSize: [size, size + 12],
-    iconAnchor: [size / 2, size + 12]
-  })
-}
-
-const iconoUsuario = L.divIcon({
-  className: 'pin-usuario',
-  html: `
-    <div style="position:relative;width:30px;height:30px;transform:translate(-50%,-50%)">
-      <div style="position:absolute;inset:0;background:rgba(43,172,226,0.3);border-radius:50%;animation:pulso 2s ease-in-out infinite"></div>
-      <div style="position:absolute;inset:7px;background:#2BACE2;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.35)"></div>
+      {/* Punto "disponible ahora" */}
+      {negocio.aceptaAhora && (
+        <div
+          className="animate-pulso"
+          style={{
+            position: 'absolute', top: -2, left: -2, width: 18, height: 18,
+            background: '#F59E0B', border: '2px solid white', borderRadius: '50%', zIndex: 4
+          }}
+        />
+      )}
     </div>
-  `,
-  iconSize: [30, 30],
-  iconAnchor: [15, 15]
-})
-
-function VolarA({ pos, zoom = 16 }) {
-  const map = useMap()
-  useEffect(() => {
-    if (pos) map.flyTo([pos.lat, pos.lng], zoom, { duration: 0.6 })
-  }, [pos, zoom, map])
-  return null
-}
-
-// Recentra el mapa cuando cambia la ciudad activa (cambio instantáneo, no fly).
-// Guarda la última ciudad aplicada para no pelear con la selección de negocios.
-function CentrarEnCiudad({ centro, zoom }) {
-  const map = useMap()
-  const ultimo = useRef(null)
-  useEffect(() => {
-    if (!centro) return
-    const clave = `${centro.lat},${centro.lng}`
-    if (ultimo.current === clave) return
-    ultimo.current = clave
-    map.setView([centro.lat, centro.lng], zoom ?? map.getZoom())
-  }, [centro, zoom, map])
-  return null
-}
-
-function MapaRefCapture({ mapaRef }) {
-  const map = useMap()
-  useEffect(() => {
-    if (mapaRef) mapaRef.current = map
-    return () => {
-      if (mapaRef) mapaRef.current = null
-    }
-  }, [map, mapaRef])
-  return null
+  )
 }
 
 function MapViewInner({
@@ -113,47 +116,104 @@ function MapViewInner({
   centro = CIUDAD.centro,
   zoom = CIUDAD.zoom
 }) {
+  const mapRef = useRef(null)
+  const ultimaCiudad = useRef(null)
+
+  const onLoad = useCallback(
+    (e) => {
+      const map = e.target
+      // El padre (botón "centrar en mí") usa este ref con la API de MapLibre.
+      if (mapaRef) mapaRef.current = map
+      agregarEdificios3D(map)
+    },
+    [mapaRef]
+  )
+
+  // Vuela hacia el negocio seleccionado, con padding inferior para que el pin
+  // quede por encima del bottom sheet.
+  useEffect(() => {
+    if (!seleccionado || !mapRef.current) return
+    const n = negocios.find((x) => x.id === seleccionado)
+    if (!n) return
+    mapRef.current.flyTo({
+      center: [n.lng, n.lat],
+      zoom: Math.max(16, mapRef.current.getZoom?.() ?? 16),
+      duration: 800,
+      padding: { top: 0, left: 0, right: 0, bottom: 320 },
+      essential: true
+    })
+  }, [seleccionado, negocios])
+
+  // Recentra al cambiar la ciudad activa (no en el primer render: initialViewState
+  // ya centra). Vuela suave a la nueva región.
+  useEffect(() => {
+    if (!centro || !mapRef.current) return
+    const clave = `${centro.lat},${centro.lng}`
+    if (ultimaCiudad.current === null) {
+      ultimaCiudad.current = clave
+      return
+    }
+    if (ultimaCiudad.current === clave) return
+    ultimaCiudad.current = clave
+    mapRef.current.flyTo({ center: [centro.lng, centro.lat], zoom, duration: 1200, essential: true })
+  }, [centro, zoom])
+
   return (
-    <MapContainer
-      center={[centro.lat, centro.lng]}
-      zoom={zoom}
-      style={{ height: '100%', width: '100%' }}
-      zoomControl={false}
-      scrollWheelZoom
+    <Map
+      ref={mapRef}
+      onLoad={onLoad}
+      mapStyle={ESTILO_MAPA}
+      initialViewState={{
+        longitude: centro.lng,
+        latitude: centro.lat,
+        zoom,
+        pitch: 45,
+        bearing: -12
+      }}
+      style={{ width: '100%', height: '100%' }}
+      attributionControl={{ compact: true }}
+      maxPitch={60}
+      dragRotate
+      touchZoomRotate
+      reuseMaps
     >
-      <TileLayer
-        attribution='&copy; OpenStreetMap'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-
-      <MapaRefCapture mapaRef={mapaRef} />
-      <CentrarEnCiudad centro={centro} zoom={zoom} />
-
-      {usuario && <Marker position={[usuario.lat, usuario.lng]} icon={iconoUsuario} />}
-
-      {negocios.map((n) => (
-        <Marker
-          key={n.id}
-          position={[n.lat, n.lng]}
-          icon={iconoNegocio(n, {
-            activo: seleccionado === n.id,
-            destacado: destacadosIds.includes(n.id)
-          })}
-          eventHandlers={{ click: () => onSeleccionar?.(n.id) }}
-          zIndexOffset={
-            seleccionado === n.id
-              ? 2000
-              : destacadosIds.includes(n.id)
-              ? 1000
-              : 0
-          }
-        />
-      ))}
-
-      {seleccionado && (
-        <VolarA pos={negocios.find((n) => n.id === seleccionado)} zoom={16} />
+      {usuario && (
+        <Marker longitude={usuario.lng} latitude={usuario.lat} anchor="center">
+          <div style={{ position: 'relative', width: 30, height: 30 }}>
+            <div
+              className="animate-pulso"
+              style={{ position: 'absolute', inset: 0, background: 'rgba(43,172,226,0.3)', borderRadius: '50%' }}
+            />
+            <div
+              style={{
+                position: 'absolute', inset: 7, background: '#2BACE2',
+                border: '3px solid white', borderRadius: '50%',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.5)'
+              }}
+            />
+          </div>
+        </Marker>
       )}
-    </MapContainer>
+
+      {negocios.map((n) => {
+        const activo = seleccionado === n.id
+        return (
+          <Marker
+            key={n.id}
+            longitude={n.lng}
+            latitude={n.lat}
+            anchor="bottom"
+            style={{ zIndex: activo ? 3 : destacadosIds.includes(n.id) ? 2 : 1, cursor: 'pointer' }}
+            onClick={(e) => {
+              e.originalEvent.stopPropagation()
+              onSeleccionar?.(n.id)
+            }}
+          >
+            <PinNegocio negocio={n} activo={activo} />
+          </Marker>
+        )
+      })}
+    </Map>
   )
 }
 

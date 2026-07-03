@@ -6,7 +6,7 @@ import { useReservas } from '@/lib/store'
 import { useCliente } from '@/lib/store-cliente'
 import { useDatosStore } from '@/lib/store-datos'
 import { obtenerNegocio, obtenerServicio, useNegocios } from '@/lib/data/negocios'
-import { formatoUSD, mesCorto, diasSemanaCorto } from '@/lib/utils'
+import { formatoUSD, mesCorto, diasSemanaCorto, estadoReserva } from '@/lib/utils'
 import TarjetaNegocio from '@/components/TarjetaNegocio'
 import Billetera from '@/components/Billetera'
 import { useUbicacion } from '@/lib/store'
@@ -186,16 +186,17 @@ function ItemReserva({ reserva }) {
   const hora =
     reserva.hora ||
     `${String(fecha.getHours()).padStart(2, '0')}:${String(fecha.getMinutes()).padStart(2, '0')}`
+  const est = estadoReserva(reserva)
   const colorEstado = {
     confirmada: 'bg-marca-500/15 text-marca-700',
     completada: 'bg-acento-500 text-white',
     cancelada: 'bg-white/10 text-zinc-300'
   }[reserva.estado]
-  const textoEstado = {
-    confirmada: 'Confirmada',
-    completada: 'Completada',
-    cancelada: 'Cancelada'
-  }[reserva.estado]
+  // Para reservas confirmadas mostramos el estado "en vivo" (Te esperan hoy / En progreso).
+  const textoEstado =
+    reserva.estado === 'confirmada'
+      ? est.etiqueta
+      : { completada: 'Completada', cancelada: 'Cancelada' }[reserva.estado]
 
   return (
     <Link
@@ -216,6 +217,9 @@ function ItemReserva({ reserva }) {
         </div>
         <div className="font-medium text-sm text-white truncate">{servicio?.nombre}</div>
         <div className="text-xs text-zinc-400 truncate">{negocio?.nombre}</div>
+        {est.cuenta && (
+          <div className="text-[11px] text-marca-400 font-medium mt-0.5">{est.cuenta}</div>
+        )}
       </div>
       <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
     </Link>

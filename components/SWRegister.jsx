@@ -6,18 +6,29 @@ export default function SWRegister() {
     if (typeof window === 'undefined') return
     if (!('serviceWorker' in navigator)) return
 
+    // En DESARROLLO no usamos service worker: cachea los chunks de Next (con hash
+    // cambiante) y deja la app pegada en pantallas viejas ("Cargando NearUs…").
+    // Además desregistramos cualquier SW y limpiamos caches que hayan quedado,
+    // para auto-reparar el navegador sin tener que hacerlo a mano.
+    if (process.env.NODE_ENV !== 'production') {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((r) => r.unregister())
+      })
+      if (window.caches) {
+        caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)))
+      }
+      return
+    }
+
     const registrar = async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/sw.js', {
-          scope: '/'
-        })
+        const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
         // En cambio de versión, actualizar al activar
         reg.addEventListener('updatefound', () => {
           const sw = reg.installing
           if (!sw) return
           sw.addEventListener('statechange', () => {
             if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-              // Hay una nueva versión disponible
               console.info('NearUs: nueva versión disponible')
             }
           })
