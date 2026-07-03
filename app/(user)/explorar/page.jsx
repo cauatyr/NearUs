@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useNegocios } from '@/lib/data/negocios'
 import { CATEGORIAS } from '@/lib/data/categorias'
+import TarjetaNegocio from '@/components/TarjetaNegocio'
 import { CIUDAD_DEFECTO, detectarCiudad, ciudadMasCercana } from '@/lib/data/ciudades'
 import { useUbicacion, useReservas } from '@/lib/store'
 import { distanciaKm, formatoDistancia } from '@/lib/utils'
@@ -18,14 +19,7 @@ import FlujoUbicacion from '@/components/FlujoUbicacion'
 
 const MapView = dynamic(() => import('@/components/MapView'), {
   ssr: false,
-  loading: () => (
-    <div className="w-full h-full bg-white/10 grid place-items-center">
-      <div className="text-zinc-400 text-sm flex items-center gap-2">
-        <div className="w-4 h-4 border-2 border-marca-500 border-t-transparent rounded-full animate-spin" />
-        Cargando mapa...
-      </div>
-    </div>
-  )
+  loading: () => <div className="w-full h-full skeleton" />
 })
 
 // IDs de negocios con destaque pago (simulado — vienen del módulo Promoción)
@@ -247,7 +241,7 @@ export default function ExplorarPage() {
           className="absolute inset-0 z-10 bg-white/5 overflow-y-auto pt-44"
           style={{ paddingBottom: 'calc(5rem + var(--safe-bottom))' }}
         >
-          <ListaCompleta negocios={negociosFiltrados} />
+          <ListaCompleta negocios={negociosFiltrados} usuario={posicion} />
         </div>
       )}
     </div>
@@ -437,11 +431,11 @@ function PanelNegocio({ negocio, visible, onCerrar }) {
   )
 }
 
-function ListaCompleta({ negocios }) {
+function ListaCompleta({ negocios, usuario }) {
   return (
     <div className="px-3 space-y-3">
       {negocios.some((n) => n._destacado) && (
-        <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 px-1">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-amber-500 px-1">
           <Sparkles className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
           <span className="uppercase tracking-wide">Destacados</span>
         </div>
@@ -458,70 +452,15 @@ function ListaCompleta({ negocios }) {
           </p>
         </div>
       ) : (
-        negocios.map((n) => <FilaNegocio key={n.id} negocio={n} />)
+        negocios.map((n) => (
+          <div
+            key={n.id}
+            className={n._destacado ? 'rounded-2xl ring-2 ring-amber-400/60' : ''}
+          >
+            <TarjetaNegocio negocio={n} usuario={usuario} compacta />
+          </div>
+        ))
       )}
     </div>
-  )
-}
-
-function FilaNegocio({ negocio }) {
-  const categoria = CATEGORIAS.find((c) => c.id === negocio.categoria)
-  return (
-    <Link
-      href={`/explorar/${negocio.id}`}
-      className={`flex gap-3 bg-nocturno-500 rounded-2xl p-3 border transition ${
-        negocio._destacado
-          ? 'border-amber-400 ring-2 ring-amber-200'
-          : 'border-white/10 hover:border-marca-300'
-      }`}
-    >
-      <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-white/10 shrink-0">
-        <Image
-          src={negocio.imagen}
-          alt={negocio.nombre}
-          fill
-          className="object-cover"
-          sizes="80px"
-        />
-        {negocio._destacado && (
-          <div className="absolute -top-1 -left-1 bg-gradient-to-br from-amber-400 to-amber-600 text-white p-1 rounded-lg shadow-md">
-            <Sparkles className="w-3 h-3 fill-white" />
-          </div>
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span
-            className="text-[9px] font-bold uppercase tracking-wider"
-            style={{ color: categoria?.color }}
-          >
-            {categoria?.nombre}
-          </span>
-          {negocio.aceptaAhora && (
-            <span className="bg-marca-500/15 text-marca-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-              <Zap className="w-2.5 h-2.5 fill-marca-600" /> AHORA
-            </span>
-          )}
-        </div>
-        <h3 className="mt-0.5 font-bold text-sm text-white leading-tight truncate">
-          {negocio.nombre}
-        </h3>
-        <div className="mt-1 flex items-center gap-2 text-xs text-zinc-400">
-          <span className="flex items-center gap-0.5">
-            <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-            <strong className="text-zinc-200">{negocio.rating}</strong>
-          </span>
-          <span>·</span>
-          <span>{negocio.barrio}</span>
-        </div>
-        <div className="mt-1 text-xs text-zinc-400 truncate">{negocio.descripcion}</div>
-      </div>
-
-      <div className="text-right shrink-0 flex flex-col items-end justify-between">
-        <div className="text-xs font-bold text-marca-600">{formatoDistancia(negocio._dist)}</div>
-        <ChevronRight className="w-4 h-4 text-zinc-300" />
-      </div>
-    </Link>
   )
 }

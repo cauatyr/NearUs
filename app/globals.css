@@ -62,3 +62,28 @@ button { font-family: inherit; }
   to { opacity: 1; }
 }
 .animate-fade-in { animation: fade-in 0.2s ease-out; }
+
+/* Skeleton shimmer (loaders premium) */
+.skeleton { position: relative; overflow: hidden; background: rgba(255,255,255,0.06); }
+.skeleton::after {
+  content: '';
+  position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+
+/* Pop (corazón de favorito, estrellas) */
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+.animate-pop { animation: pop 0.35s ease-out; }
+
+/* Transición de página (entre rutas del cliente) */
+@keyframes page-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.animate-page { animation: page-in 0.34s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Confeti (momento wow: reserva / reseña) */
+@keyframes confeti-fall {
+  0% { transform: translateY(-5vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}

@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { QRCodeSVG } from 'qrcode.react'
@@ -12,6 +12,7 @@ import { formatoUSD, formatoDuracion, mesCorto, diasSemanaCorto, estadoReserva }
 import TimelineReserva from '@/components/TimelineReserva'
 import ModalReagendar from '@/components/ModalReagendar'
 import FormResena from '@/components/FormResena'
+import Confeti from '@/components/Confeti'
 
 export default function ConfirmacionPage() {
   const { id } = useParams()
@@ -23,12 +24,24 @@ export default function ConfirmacionPage() {
   const agregarResena = useDatosStore((s) => s.agregarResena)
   const cliente = useCliente((s) => s.cliente)
   const [reagendando, setReagendando] = useState(false)
+  const [festejo, setFestejo] = useState(0)
   // La copia local da campos instantáneos (ej. `hora`); la de Supabase es la
   // fuente de verdad del ESTADO (completada/cancelada/reagendada desde otro
   // dispositivo o el panel del negocio). Merge: local de base, Supabase encima.
   const reservaLocal = reservas.find((r) => r.id === id)
   const reservaSupa = supaReservas.find((r) => r.id === id)
   const reserva = reservaSupa ? { ...reservaLocal, ...reservaSupa } : reservaLocal
+
+  // Confeti al llegar de una reserva recién creada (flag puesta en reservar/ahora).
+  useEffect(() => {
+    if (!reserva) return
+    try {
+      if (sessionStorage.getItem('nearus-celebrar') === reserva.id) {
+        sessionStorage.removeItem('nearus-celebrar')
+        setFestejo((f) => f + 1)
+      }
+    } catch (_) {}
+  }, [reserva?.id])
 
   if (!reserva) {
     return (
@@ -59,7 +72,7 @@ export default function ConfirmacionPage() {
   }
 
   const enviarResena = async (rating, comentario) => {
-    return await agregarResena({
+    const res = await agregarResena({
       negocioId: reserva.negocioId,
       reservaId: reserva.id,
       clienteUserId: cliente?.id || reserva.clienteUserId || null,
@@ -67,10 +80,14 @@ export default function ConfirmacionPage() {
       rating,
       comentario
     })
+    if (!res?.error) setFestejo((f) => f + 1)
+    return res
   }
 
   return (
     <div className="pb-32 bg-white/5">
+      <Confeti trigger={festejo} />
+
       {/* Hero confirmación */}
       <div className={`px-5 pt-10 pb-8 text-center text-white ${cancelada ? 'bg-zinc-600' : 'bg-marca-500'}`}>
         <div className="w-16 h-16 mx-auto bg-white/20 rounded-full grid place-items-center backdrop-blur">

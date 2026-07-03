@@ -85,6 +85,7 @@ export default function ReservarPage() {
         cliente: { nombre: cliente.nombre, celular: cliente.celular }
       })
       if (error) console.warn('No se pudo guardar la reserva en el negocio:', error)
+      try { sessionStorage.setItem('nearus-celebrar', reserva.id) } catch (_) {}
       router.push(`/confirmacion/${reserva.id}`)
     }, 600)
   }

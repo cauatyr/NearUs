@@ -52,6 +52,7 @@ export default function AhoraPage() {
       hora: hora === '00:00' ? '14:00' : hora,
       modo: 'ahora'
     })
+    try { sessionStorage.setItem('nearus-celebrar', reserva.id) } catch (_) {}
     router.push(`/confirmacion/${reserva.id}`)
   }
 
