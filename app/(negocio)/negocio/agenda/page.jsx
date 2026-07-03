@@ -1,14 +1,20 @@
 'use client'
 import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
-import { Calendar, Clock, Phone, ChevronLeft, ChevronRight, Plus, Search, CreditCard, Wallet, Sparkles, TrendingUp, X } from 'lucide-react'
+import { Calendar, Clock, Phone, ChevronLeft, ChevronRight, Search, CreditCard, Wallet, Sparkles, TrendingUp, X } from 'lucide-react'
 import { useReservasDemo, obtenerServicioDemo, obtenerEmpleadoDemo } from '@/lib/data/demo-negocio'
 import { empleadosDeNegocio } from '@/lib/data/negocios'
 import { useSesion } from '@/lib/store-sesion'
 import { useDatosStore } from '@/lib/store-datos'
-import { formatoUSD, mesCorto, siguientesDias, generarHorarios, diasSemanaCorto } from '@/lib/utils'
+import { formatoUSD, mesCorto, siguientesDias, generarHorarios, diasSemanaCorto, franjaDelDia } from '@/lib/utils'
 
-const HORAS = Array.from({ length: 13 }, (_, i) => 8 + i) // 8 a 20
+// Paleta de colores por profesional (distinguibles sobre fondo oscuro)
+const PALETA_EMP = ['#3B82F6', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#EF4444', '#14B8A6', '#F97316']
+function colorEmpleado(empleadoId, empleados) {
+  if (!empleadoId) return '#6366F1'
+  const i = empleados.findIndex((e) => e.id === empleadoId)
+  return PALETA_EMP[(i >= 0 ? i : 0) % PALETA_EMP.length]
+}
 
 export default function AgendaPage() {
   const negocioId = useSesion((s) => s.negocioId)
@@ -18,6 +24,8 @@ export default function AgendaPage() {
     [todasReservas, negocioId]
   )
   const empleados = empleadosDeNegocio(negocioId)
+  const negocios = useDatosStore((s) => s.negocios)
+  const negocio = useMemo(() => negocios.find((n) => n.id === negocioId), [negocios, negocioId])
   const [fecha, setFecha] = useState(new Date())
   const [empleadoSel, setEmpleadoSel] = useState('todos')
   const [reservaAbierta, setReservaAbierta] = useState(null)
@@ -28,7 +36,8 @@ export default function AgendaPage() {
       return (
         f.toDateString() === fecha.toDateString() &&
         (empleadoSel === 'todos' || r.empleadoId === empleadoSel) &&
-        r.estado !== 'cancelada'
+        r.estado !== 'cancelada' &&
+        r.estado !== 'ausente'
       )
     }).sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
   }, [RESERVAS_DEMO, fecha, empleadoSel])
@@ -46,7 +55,10 @@ export default function AgendaPage() {
     setFecha(d)
   }
 
-  const esHoy = fecha.toDateString() === new Date().toDateString()
+  const ahora = new Date()
+  const esHoy = fecha.toDateString() === ahora.toDateString()
+  const ahoraMin = ahora.getHours() * 60 + ahora.getMinutes()
+  const franja = franjaDelDia(negocio?.horarioSemanal, fecha)
 
   return (
     <div className="p-5 md:p-8">
@@ -64,9 +76,6 @@ export default function AgendaPage() {
         <div className="flex items-center gap-2">
           <button className="bg-nocturno-500 border border-white/10 hover:bg-white/5 rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2">
             <Search className="w-4 h-4" /> <span className="hidden sm:inline">Buscar</span>
-          </button>
-          <button className="bg-marca-500 hover:bg-marca-600 text-white rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Nueva
           </button>
         </div>
       </div>
@@ -98,7 +107,12 @@ export default function AgendaPage() {
           Todo el equipo
         </ChipEmpleado>
         {empleados.map((e) => (
-          <ChipEmpleado key={e.id} activo={empleadoSel === e.id} onClick={() => setEmpleadoSel(e.id)}>
+          <ChipEmpleado
+            key={e.id}
+            activo={empleadoSel === e.id}
+            onClick={() => setEmpleadoSel(e.id)}
+            color={colorEmpleado(e.id, empleados)}
+          >
             {e.nombre.split(' ')[0]}
           </ChipEmpleado>
         ))}
@@ -106,33 +120,14 @@ export default function AgendaPage() {
 
       {/* Timeline */}
       <div className="mt-5 grid md:grid-cols-[1fr_320px] gap-5">
-        <div className="bg-nocturno-500 rounded-2xl border border-white/10 overflow-hidden">
-          {HORAS.map((h) => {
-            const enHora = reservasDelDia.filter((r) => new Date(r.fecha).getHours() === h)
-            return (
-              <div key={h} className="flex border-b border-white/5 last:border-b-0">
-                <div className="w-16 sm:w-20 shrink-0 p-3 text-xs text-zinc-400 text-right font-medium border-r border-white/5">
-                  {String(h).padStart(2, '0')}:00
-                </div>
-                <div className="flex-1 min-h-[80px] p-2 space-y-1.5">
-                  {enHora.length === 0 ? (
-                    <button className="w-full h-full min-h-[64px] border-2 border-dashed border-white/10 rounded-xl text-xs text-zinc-300 hover:text-zinc-400 hover:border-white/20 transition">
-                      + Disponible
-                    </button>
-                  ) : (
-                    enHora.map((r) => (
-                      <BloqueReserva
-                        key={r.id}
-                        reserva={r}
-                        onClick={() => setReservaAbierta(r)}
-                      />
-                    ))
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+        <TimelineDia
+          reservas={reservasDelDia}
+          franja={franja}
+          esHoy={esHoy}
+          ahoraMin={ahoraMin}
+          empleados={empleados}
+          onSelect={setReservaAbierta}
+        />
 
         {/* Panel derecho — detalle de reserva */}
         <div className="hidden md:block">
@@ -156,53 +151,135 @@ export default function AgendaPage() {
   )
 }
 
-function ChipEmpleado({ activo, onClick, children }) {
+function ChipEmpleado({ activo, onClick, color, children }) {
   return (
     <button
       onClick={onClick}
-      className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium border transition whitespace-nowrap ${
+      className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium border transition whitespace-nowrap flex items-center gap-1.5 ${
         activo
           ? 'bg-marca-500 border-marca-500 text-white'
           : 'bg-nocturno-500 border-white/10 text-zinc-200 hover:border-white/20'
       }`}
     >
+      {color && (
+        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+      )}
       {children}
     </button>
   )
 }
 
-function BloqueReserva({ reserva, onClick }) {
-  const servicio = obtenerServicioDemo(reserva.servicioId)
-  const empleado = obtenerEmpleadoDemo(reserva.empleadoId)
-  const fecha = new Date(reserva.fecha)
+// Timeline proporcional: cada reserva es un bloque cuya altura = duración,
+// coloreado por profesional. Marca las horas fuera del horario en gris y una
+// línea del "ahora". Funciona en mobile (columna única) y desktop.
+const PX_POR_MIN = 1.1 // 60 min ≈ 66px de alto
+
+function TimelineDia({ reservas, franja, esHoy, ahoraMin, empleados, onSelect }) {
+  const toMin = (t) => {
+    const [h, m] = String(t).split(':').map(Number)
+    return h * 60 + m
+  }
+  const abierto = franja ? franja.abierto : true
+  const apMin = abierto && franja ? toMin(franja.apertura) : 9 * 60
+  const ciMin = abierto && franja ? toMin(franja.cierre) : 19 * 60
+
+  // Rango visible: abarca 08–20 y se estira si el horario excede ese margen.
+  const startH = Math.min(8, Math.floor(apMin / 60))
+  const endH = Math.max(20, Math.ceil(ciMin / 60))
+  const rangoIni = startH * 60
+  const totalMin = (endH - startH) * 60
+  const altura = totalMin * PX_POR_MIN
+  const top = (min) => (min - rangoIni) * PX_POR_MIN
+
+  const horas = []
+  for (let h = startH; h <= endH; h++) horas.push(h)
 
   return (
-    <button
-      onClick={onClick}
-      className="w-full bg-marca-500/10 hover:bg-marca-500/15 border-l-4 border-marca-500 rounded-xl px-3 py-2.5 text-left transition group"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="font-medium text-sm text-white truncate">{reserva.cliente.nombre}</div>
-          <div className="text-xs text-zinc-300 truncate">{servicio?.nombre}</div>
-          <div className="mt-1 text-[11px] text-zinc-400 flex items-center gap-2">
-            <span className="flex items-center gap-0.5">
-              <Clock className="w-3 h-3" /> {String(fecha.getHours()).padStart(2, '0')}:{String(fecha.getMinutes()).padStart(2, '0')}
-            </span>
-            <span>·</span>
-            <span>{reserva.duracion} min</span>
-            <span>·</span>
-            <span>{empleado?.nombre.split(' ')[0]}</span>
+    <div className="bg-nocturno-500 rounded-2xl border border-white/10 overflow-hidden">
+      <div className="relative" style={{ height: altura }}>
+        {/* Grilla de horas */}
+        {horas.map((h) => (
+          <div
+            key={h}
+            className="absolute left-0 right-0 flex"
+            style={{ top: (h - startH) * 60 * PX_POR_MIN, height: 60 * PX_POR_MIN }}
+          >
+            <div className="w-14 sm:w-16 shrink-0 pr-2 pt-1 text-[11px] text-zinc-500 text-right">
+              {String(h).padStart(2, '0')}:00
+            </div>
+            <div className="flex-1 border-t border-white/5" />
           </div>
-        </div>
-        <div className="text-right shrink-0">
-          <div className="text-sm font-semibold text-white">{formatoUSD(reserva.precio)}</div>
-          <div className="text-[10px] text-zinc-400 mt-0.5">
-            {reserva.metodoPago === 'inapp' ? 'App' : 'Local'}
+        ))}
+
+        {/* Zonas cerradas (gris) */}
+        {abierto ? (
+          <>
+            {apMin > rangoIni && <ZonaCerrada top={0} height={(apMin - rangoIni) * PX_POR_MIN} />}
+            {ciMin < endH * 60 && (
+              <ZonaCerrada top={top(ciMin)} height={(endH * 60 - ciMin) * PX_POR_MIN} />
+            )}
+          </>
+        ) : (
+          <ZonaCerrada top={0} height={altura} etiqueta="Cerrado este día" />
+        )}
+
+        {/* Línea del ahora */}
+        {esHoy && ahoraMin >= rangoIni && ahoraMin <= endH * 60 && (
+          <div
+            className="absolute left-14 sm:left-16 right-0 z-20 pointer-events-none"
+            style={{ top: top(ahoraMin) }}
+          >
+            <div className="relative border-t-2 border-red-500/80">
+              <div className="absolute -left-1 -top-[5px] w-2 h-2 rounded-full bg-red-500" />
+            </div>
           </div>
+        )}
+
+        {/* Reservas */}
+        <div className="absolute left-14 sm:left-16 right-0 top-0 bottom-0">
+          {reservas.length === 0 && abierto && (
+            <div className="absolute inset-0 grid place-items-center text-xs text-zinc-500">
+              Sin reservas este día
+            </div>
+          )}
+          {reservas.map((r) => {
+            const ini = new Date(r.fecha)
+            const min = ini.getHours() * 60 + ini.getMinutes()
+            const color = colorEmpleado(r.empleadoId, empleados)
+            const alto = Math.max(r.duracion * PX_POR_MIN, 30)
+            const servicio = obtenerServicioDemo(r.servicioId)
+            return (
+              <button
+                key={r.id}
+                onClick={() => onSelect(r)}
+                className="absolute left-1.5 right-1.5 rounded-lg border-l-4 px-2.5 py-1 text-left overflow-hidden hover:brightness-125 transition"
+                style={{ top: top(min), height: alto, borderLeftColor: color, backgroundColor: `${color}26` }}
+              >
+                <div className="text-xs font-medium text-white truncate">{r.cliente.nombre}</div>
+                <div className="text-[10px] text-zinc-300 truncate">{servicio?.nombre}</div>
+                {alto > 48 && (
+                  <div className="mt-0.5 text-[10px] text-zinc-400 flex items-center gap-1">
+                    <Clock className="w-2.5 h-2.5" />
+                    {String(ini.getHours()).padStart(2, '0')}:{String(ini.getMinutes()).padStart(2, '0')} · {r.duracion}m
+                  </div>
+                )}
+              </button>
+            )
+          })}
         </div>
       </div>
-    </button>
+    </div>
+  )
+}
+
+function ZonaCerrada({ top, height, etiqueta }) {
+  return (
+    <div
+      className="absolute left-14 sm:left-16 right-0 z-10 pointer-events-none bg-white/[0.03] grid place-items-center"
+      style={{ top, height }}
+    >
+      {etiqueta && <span className="text-xs text-zinc-500">{etiqueta}</span>}
+    </div>
   )
 }
 
@@ -229,6 +306,17 @@ function DetalleReserva({ reserva, onCerrar }) {
     if (err) { setError(err); return }
     onCerrar()
   }
+
+  const cambiarEstado = async (estado, mensajeConfirm) => {
+    if (mensajeConfirm && !confirm(mensajeConfirm)) return
+    setGuardando(true)
+    const { error: err } = await actualizarReserva(reserva.id, { estado })
+    setGuardando(false)
+    if (err) { setError(err); return }
+    onCerrar()
+  }
+
+  const terminal = ['completada', 'cancelada', 'ausente'].includes(reserva.estado)
 
   const confirmarReagenda = async () => {
     if (!nuevaHora) return
@@ -269,7 +357,7 @@ function DetalleReserva({ reserva, onCerrar }) {
         <Fila label="Duración" valor={`${reserva.duracion} min`} />
         <Fila label="Pago" valor={reserva.metodoPago === 'inapp' ? 'App (pre-autorizado)' : 'En el local'} />
         <Fila label="Total" valor={formatoUSD(reserva.precio)} destacado />
-        <Fila label="Estado" valor={atendido ? 'Atendido ✓' : 'Confirmada'} />
+        <Fila label="Estado" valor={etiquetaEstado(reserva.estado)} />
       </div>
 
       {error && (
@@ -330,25 +418,57 @@ function DetalleReserva({ reserva, onCerrar }) {
             </button>
           </div>
         </div>
+      ) : terminal ? (
+        <div className="mt-5 text-center text-xs text-zinc-400 bg-white/5 border border-white/10 rounded-xl py-3">
+          Reserva {etiquetaEstado(reserva.estado).toLowerCase()}
+        </div>
       ) : (
-        <div className="mt-5 grid grid-cols-2 gap-2">
-          <button
-            onClick={() => setReagendando(true)}
-            className="bg-nocturno-500 border border-white/10 hover:bg-white/5 rounded-full py-2.5 text-xs font-medium text-zinc-200"
-          >
-            Reagendar
-          </button>
-          <button
-            onClick={marcarAtendido}
-            disabled={guardando || atendido}
-            className="bg-marca-500 hover:bg-marca-600 disabled:bg-white/10 disabled:text-zinc-400 text-white rounded-full py-2.5 text-xs font-semibold"
-          >
-            {atendido ? 'Atendido ✓' : guardando ? 'Guardando…' : 'Marcar atendido'}
-          </button>
+        <div className="mt-5 space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setReagendando(true)}
+              disabled={guardando}
+              className="bg-nocturno-500 border border-white/10 hover:bg-white/5 rounded-full py-2.5 text-xs font-medium text-zinc-200"
+            >
+              Reagendar
+            </button>
+            <button
+              onClick={marcarAtendido}
+              disabled={guardando}
+              className="bg-marca-500 hover:bg-marca-600 disabled:bg-white/10 disabled:text-zinc-400 text-white rounded-full py-2.5 text-xs font-semibold"
+            >
+              {guardando ? 'Guardando…' : 'Marcar atendido'}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => cambiarEstado('ausente')}
+              disabled={guardando}
+              className="border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 rounded-full py-2.5 text-xs font-medium disabled:opacity-50"
+            >
+              No vino
+            </button>
+            <button
+              onClick={() => cambiarEstado('cancelada', '¿Cancelar esta reserva?')}
+              disabled={guardando}
+              className="border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-full py-2.5 text-xs font-medium disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+          </div>
         </div>
       )}
     </div>
   )
+}
+
+function etiquetaEstado(estado) {
+  switch (estado) {
+    case 'completada': return 'Atendido ✓'
+    case 'cancelada': return 'Cancelada'
+    case 'ausente': return 'No vino'
+    default: return 'Confirmada'
+  }
 }
 
 function Fila({ label, valor, destacado }) {

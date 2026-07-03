@@ -1,11 +1,12 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { ImagePlus, X, Phone, Clock, Check, AlertCircle, Lock } from 'lucide-react'
+import { ImagePlus, X, Phone, Check, AlertCircle, Lock } from 'lucide-react'
 import { useDatosStore } from '@/lib/store-datos'
 import { useNegocios } from '@/lib/data/negocios'
 import { useSesion } from '@/lib/store-sesion'
-import { comprimirImagen, logoPlaceholder } from '@/lib/utils'
+import { comprimirImagen, logoPlaceholder, horarioSemanalDefault, resumenHorario } from '@/lib/utils'
 import { CATEGORIAS } from '@/lib/data/categorias'
+import HorarioEditor from '@/components/HorarioEditor'
 
 export default function ConfiguracionPage() {
   const negocioId = useSesion((s) => s.negocioId)
@@ -15,7 +16,7 @@ export default function ConfiguracionPage() {
 
   const [imagen, setImagen] = useState('')
   const [telefono, setTelefono] = useState('')
-  const [horario, setHorario] = useState('')
+  const [horarioSemanal, setHorarioSemanal] = useState(null)
   const [estado, setEstado] = useState('idle') // 'idle' | 'guardando' | 'guardado' | 'error'
   const [error, setError] = useState(null)
 
@@ -24,7 +25,7 @@ export default function ConfiguracionPage() {
     if (negocio) {
       setImagen(negocio.imagen || '')
       setTelefono(negocio.telefono || '')
-      setHorario(negocio.horario || '')
+      setHorarioSemanal(negocio.horarioSemanal || horarioSemanalDefault())
     }
   }, [negocio])
 
@@ -40,12 +41,17 @@ export default function ConfiguracionPage() {
   const sinCambios =
     imagen === (negocio.imagen || '') &&
     telefono === (negocio.telefono || '') &&
-    horario === (negocio.horario || '')
+    JSON.stringify(horarioSemanal) === JSON.stringify(negocio.horarioSemanal || horarioSemanalDefault())
 
   const guardar = async () => {
     setEstado('guardando')
     setError(null)
-    const { error: e } = await actualizarNegocio(negocio.id, { imagen, telefono, horario })
+    const { error: e } = await actualizarNegocio(negocio.id, {
+      imagen,
+      telefono,
+      horario: resumenHorario(horarioSemanal),
+      horarioSemanal
+    })
     if (e) {
       setEstado('error')
       setError(e)
@@ -128,13 +134,13 @@ export default function ConfiguracionPage() {
       </Seccion>
 
       {/* Horario */}
-      <Seccion titulo="Horario" descripcion="Texto libre. Ej: 'Lun–Sáb · 09:00–19:00' o 'Cita previa'.">
-        <CampoInput
-          icono={Clock}
-          etiqueta="Horario de atención"
-          placeholder="Lun–Sáb · 09:00–19:00"
-          valor={horario}
-          onChange={setHorario}
+      <Seccion
+        titulo="Horario de atención"
+        descripcion="Marca los días y las horas que abrís. Los clientes solo podrán reservar dentro de este horario."
+      >
+        <HorarioEditor
+          valor={horarioSemanal || horarioSemanalDefault()}
+          onChange={setHorarioSemanal}
         />
       </Seccion>
     </div>

@@ -28,7 +28,7 @@ export default function LoginPage() {
       setError(err)
       return
     }
-    router.replace('/negocio/agenda')
+    router.replace('/negocio/inicio')
   }
 
   return (
@@ -150,7 +150,7 @@ function SelectorDemo({ onCerrar }) {
 
   const elegir = (id) => {
     setModoDemo(id)
-    router.replace('/negocio/agenda')
+    router.replace('/negocio/inicio')
   }
 
   return (

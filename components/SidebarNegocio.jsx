@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Calendar, Scissors, Users, QrCode, BarChart3, Sparkles,
+  LayoutDashboard, Calendar, Scissors, Users, QrCode, BarChart3, Star, Sparkles,
   Settings, ChevronRight, Menu, X, LogOut
 } from 'lucide-react'
 import { useNegocios } from '@/lib/data/negocios'
@@ -12,10 +12,12 @@ import Logo from '@/components/Logo'
 import { useRouter } from 'next/navigation'
 
 const SECCIONES = [
+  { href: '/negocio/inicio', icono: LayoutDashboard, label: 'Inicio', desc: 'Visión general' },
   { href: '/negocio/agenda', icono: Calendar, label: 'Agenda', desc: 'Reservas del día' },
   { href: '/negocio/servicios', icono: Scissors, label: 'Servicios', desc: 'Catálogo y precios' },
   { href: '/negocio/empleados', icono: Users, label: 'Equipo', desc: 'Profesionales' },
   { href: '/negocio/validar', icono: QrCode, label: 'Check-in', desc: 'Validar QR' },
+  { href: '/negocio/resenas', icono: Star, label: 'Reseñas', desc: 'Responder clientes' },
   { href: '/negocio/reportes', icono: BarChart3, label: 'Reportes', desc: 'Métricas' },
   { href: '/negocio/promocion', icono: Sparkles, label: 'Promoción', desc: 'Plan Pro y destaques', destacado: true },
   { href: '/negocio/configuracion', icono: Settings, label: 'Configuración', desc: 'Foto, contacto y horario' }

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { notFound, useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  ArrowLeft, Star, Clock, MapPin, Phone, Heart, Share2, Zap, Calendar, ChevronRight, BadgeCheck
+  ArrowLeft, Star, Clock, MapPin, Phone, Heart, Share2, Zap, Calendar, ChevronRight, BadgeCheck, MessageSquare
 } from 'lucide-react'
 import { obtenerNegocio, serviciosDeNegocio, empleadosDeNegocio } from '@/lib/data/negocios'
 import { CATEGORIAS } from '@/lib/data/categorias'
@@ -153,6 +153,13 @@ export default function DetalleNegocio() {
                 className="block bg-nocturno-500 border border-white/10 hover:border-marca-300 active:scale-[0.99] rounded-2xl p-4 transition group"
               >
                 <div className="flex items-start justify-between gap-3">
+                  {s.foto && (
+                    <img
+                      src={s.foto}
+                      alt={s.nombre}
+                      className="w-14 h-14 rounded-xl object-cover border border-white/10 shrink-0"
+                    />
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-white">{s.nombre}</div>
                     <div className="text-xs text-zinc-400 mt-1 flex items-center gap-1">
@@ -181,9 +188,17 @@ export default function DetalleNegocio() {
               <div className="grid grid-cols-2 gap-3">
                 {empleados.map((e) => (
                   <div key={e.id} className="bg-nocturno-500 border border-white/10 rounded-2xl p-4 text-center">
-                    <div className="w-14 h-14 mx-auto rounded-full bg-marca-500/15 grid place-items-center text-marca-600 font-semibold">
-                      {e.avatar}
-                    </div>
+                    {e.foto ? (
+                      <img
+                        src={e.foto}
+                        alt={e.nombre}
+                        className="w-14 h-14 mx-auto rounded-full object-cover border border-white/10"
+                      />
+                    ) : (
+                      <div className="w-14 h-14 mx-auto rounded-full bg-marca-500/15 grid place-items-center text-marca-600 font-semibold">
+                        {e.avatar}
+                      </div>
+                    )}
                     <div className="mt-3 font-medium text-sm text-white">{e.nombre}</div>
                     <div className="text-xs text-zinc-400">{e.cargo}</div>
                   </div>
@@ -214,6 +229,8 @@ export default function DetalleNegocio() {
                     rating={r.rating}
                     texto={r.comentario}
                     verificado={!!r.reservaId}
+                    respuesta={r.respuesta}
+                    respuestaFecha={r.respuestaAt ? tiempoRelativo(r.respuestaAt) : null}
                   />
                 ))}
               </div>
@@ -311,7 +328,7 @@ function Info({ icono: Icono, children }) {
   )
 }
 
-function Resena({ nombre, fecha, rating, texto, verificado }) {
+function Resena({ nombre, fecha, rating, texto, verificado, respuesta, respuestaFecha }) {
   const iniciales = (nombre || 'C').split(' ').map((n) => n[0]).slice(0, 2).join('')
   return (
     <div className="bg-nocturno-500 border border-white/10 rounded-2xl p-4">
@@ -339,6 +356,16 @@ function Resena({ nombre, fecha, rating, texto, verificado }) {
         </div>
       </div>
       {texto && <p className="mt-3 text-sm text-zinc-200 leading-relaxed">{texto}</p>}
+
+      {respuesta && (
+        <div className="mt-3 ml-4 pl-3 border-l-2 border-marca-500/30">
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-marca-500">
+            <MessageSquare className="w-3 h-3" /> Respuesta del negocio
+            {respuestaFecha && <span className="text-zinc-500 font-normal">· {respuestaFecha}</span>}
+          </div>
+          <p className="mt-1 text-sm text-zinc-300 leading-relaxed">{respuesta}</p>
+        </div>
+      )}
     </div>
   )
 }

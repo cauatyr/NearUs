@@ -2,13 +2,14 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { ArrowLeft, Check, Store, MapPin, Phone, User, Mail, Lock, Sparkles, AlertCircle, ImagePlus, X, Navigation, Loader2 } from 'lucide-react'
+import { ArrowLeft, Check, Store, MapPin, Phone, User, Mail, Lock, Sparkles, AlertCircle, ImagePlus, X, Navigation, Loader2, Clock } from 'lucide-react'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { useDatosStore } from '@/lib/store-datos'
 import { CIUDAD } from '@/lib/data/negocios'
 import { CIUDADES, ciudadesActivas } from '@/lib/data/ciudades'
-import { comprimirImagen } from '@/lib/utils'
+import { comprimirImagen, horarioSemanalDefault, resumenHorario } from '@/lib/utils'
 import Logo from '@/components/Logo'
+import HorarioEditor from '@/components/HorarioEditor'
 
 const MapaPin = dynamic(() => import('@/components/MapaPin'), {
   ssr: false,
@@ -19,7 +20,7 @@ const MapaPin = dynamic(() => import('@/components/MapaPin'), {
   )
 })
 
-const PASOS = ['Tu negocio', 'Ubicación', 'Contacto', 'Listo']
+const PASOS = ['Tu negocio', 'Ubicación', 'Horario', 'Contacto', 'Listo']
 
 export default function OnboardingPage() {
   const agregarNegocio = useDatosStore((s) => s.agregarNegocio)
@@ -33,6 +34,7 @@ export default function OnboardingPage() {
     barrio: '',
     lat: CIUDAD.centro.lat,
     lng: CIUDAD.centro.lng,
+    horarioSemanal: horarioSemanalDefault(),
     telefono: '',
     email: '',
     password: '',
@@ -52,14 +54,18 @@ export default function OnboardingPage() {
   const puedeAvanzar = () => {
     if (paso === 0) return datos.nombre && datos.categoria && datos.descripcion && datos.logo
     if (paso === 1) return datos.direccion && datos.barrio && ubicacionTocada
-    if (paso === 2) return datos.telefono && datos.email && datos.responsable && datos.password && datos.password.length >= 6
+    if (paso === 2) {
+      const abiertos = datos.horarioSemanal.filter((d) => d.abierto)
+      return abiertos.length > 0 && abiertos.every((d) => d.apertura < d.cierre)
+    }
+    if (paso === 3) return datos.telefono && datos.email && datos.responsable && datos.password && datos.password.length >= 6
     return false
   }
 
   const siguiente = async () => {
-    // Si pasamos del paso 2 al 3, disparamos el insert
-    if (paso === 2) {
-      setPaso(3)
+    // Al salir del paso Contacto (3) disparamos el insert
+    if (paso === 3) {
+      setPaso(4)
       await crearNegocio()
       return
     }
@@ -78,6 +84,8 @@ export default function OnboardingPage() {
       telefono: datos.telefono,
       lat: datos.lat,
       lng: datos.lng,
+      horario: resumenHorario(datos.horarioSemanal),
+      horarioSemanal: datos.horarioSemanal,
       logo: datos.logo,
       email: datos.email,
       password: datos.password
@@ -135,8 +143,9 @@ export default function OnboardingPage() {
               ubicacionTocada={ubicacionTocada}
             />
           )}
-          {paso === 2 && <PasoContacto datos={datos} actualizar={actualizar} />}
-          {paso === 3 && (
+          {paso === 2 && <PasoHorario datos={datos} actualizar={actualizar} />}
+          {paso === 3 && <PasoContacto datos={datos} actualizar={actualizar} />}
+          {paso === 4 && (
             <PasoListo
               datos={datos}
               estado={estado}
@@ -163,7 +172,7 @@ export default function OnboardingPage() {
                 disabled={!puedeAvanzar()}
                 className="bg-marca-500 hover:bg-marca-600 disabled:bg-white/10 disabled:text-zinc-400 disabled:cursor-not-allowed text-white font-medium px-6 py-3 rounded-full transition"
               >
-                {paso === 2 ? 'Crear negocio' : 'Continuar'}
+                {paso === 3 ? 'Crear negocio' : 'Continuar'}
               </button>
             </div>
           )}
@@ -182,7 +191,7 @@ function PasoNegocio({ datos, actualizar }) {
     <div>
       <div className="flex items-center gap-2 text-marca-500 mb-2">
         <Store className="w-4 h-4" />
-        <span className="text-xs font-medium uppercase tracking-wide">Paso 1 de 3</span>
+        <span className="text-xs font-medium uppercase tracking-wide">Paso 1 de 4</span>
       </div>
       <h2 className="text-2xl font-semibold text-white">Cuéntanos de tu negocio</h2>
       <p className="text-zinc-300 mt-1">Información básica que verán tus futuros clientes.</p>
@@ -349,7 +358,7 @@ function PasoUbicacion({ datos, actualizar, actualizarUbicacion, ubicacionTocada
     <div>
       <div className="flex items-center gap-2 text-marca-500 mb-2">
         <MapPin className="w-4 h-4" />
-        <span className="text-xs font-medium uppercase tracking-wide">Paso 2 de 3</span>
+        <span className="text-xs font-medium uppercase tracking-wide">Paso 2 de 4</span>
       </div>
       <h2 className="text-2xl font-semibold text-white">¿Dónde están ubicados?</h2>
       <p className="text-zinc-300 mt-1">Para que aparezcan en el mapa de NearUs.</p>
@@ -427,12 +436,32 @@ function PasoUbicacion({ datos, actualizar, actualizarUbicacion, ubicacionTocada
   )
 }
 
+function PasoHorario({ datos, actualizar }) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 text-marca-500 mb-2">
+        <Clock className="w-4 h-4" />
+        <span className="text-xs font-medium uppercase tracking-wide">Paso 3 de 4</span>
+      </div>
+      <h2 className="text-2xl font-semibold text-white">¿Cuál es tu horario?</h2>
+      <p className="text-zinc-300 mt-1">Marca los días que abres y a qué hora. Tus clientes solo podrán reservar en estos horarios.</p>
+
+      <div className="mt-6">
+        <HorarioEditor
+          valor={datos.horarioSemanal}
+          onChange={(v) => actualizar('horarioSemanal', v)}
+        />
+      </div>
+    </div>
+  )
+}
+
 function PasoContacto({ datos, actualizar }) {
   return (
     <div>
       <div className="flex items-center gap-2 text-marca-500 mb-2">
         <Phone className="w-4 h-4" />
-        <span className="text-xs font-medium uppercase tracking-wide">Paso 3 de 3</span>
+        <span className="text-xs font-medium uppercase tracking-wide">Paso 4 de 4</span>
       </div>
       <h2 className="text-2xl font-semibold text-white">Datos de contacto</h2>
       <p className="text-zinc-300 mt-1">Te enviaremos el acceso al panel del negocio.</p>
@@ -538,10 +567,10 @@ function PasoListo({ datos, estado, errorMsg, idCreado, reintentar }) {
           </Link>
         </div>
         <Link
-          href="/negocio/agenda"
+          href="/negocio/inicio"
           className="mt-2 block bg-nocturno-500 border border-marca-500/20 rounded-xl px-4 py-3 text-sm font-medium text-marca-600 hover:bg-marca-500/10 text-center"
         >
-          Ir al panel demo
+          Ir al panel
         </Link>
       </div>
     </div>

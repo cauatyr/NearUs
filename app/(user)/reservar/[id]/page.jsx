@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter, notFound } from 'next/navigation'
 import { ArrowLeft, Clock, Calendar, CreditCard, Wallet, Check } from 'lucide-react'
 import {
@@ -8,7 +8,7 @@ import {
 import { useReservas } from '@/lib/store'
 import { useCliente } from '@/lib/store-cliente'
 import { useDatosStore } from '@/lib/store-datos'
-import { formatoUSD, formatoDuracion, siguientesDias, generarHorarios, diasSemanaCorto, ahoraEnCuenca, diaLocalISO } from '@/lib/utils'
+import { formatoUSD, formatoDuracion, siguientesDias, generarHorarios, diasSemanaCorto, ahoraEnCuenca, diaLocalISO, franjaDelDia, horariosDeFranja } from '@/lib/utils'
 
 export default function ReservarPage() {
   const { id } = useParams()
@@ -29,8 +29,19 @@ export default function ReservarPage() {
   const crearReservaPublica = useDatosStore((s) => s.crearReservaPublica)
 
   const dias = siguientesDias(14)
-  const horarios = generarHorarios(9, 19, 30)
   const horariosOcupados = ['10:30', '14:00', '16:30']
+
+  // Horario real del negocio: si tiene horario_semanal configurado, respetamos
+  // los días/horas que abre. Si no (negocios viejos), caemos al 09–19 de siempre.
+  const franjaHoy = franjaDelDia(negocio.horarioSemanal, fecha)
+  const usaHorarioReal = Array.isArray(negocio.horarioSemanal)
+  const diaCerrado = usaHorarioReal && (!franjaHoy || !franjaHoy.abierto)
+  const horarios = diaCerrado
+    ? []
+    : usaHorarioReal && franjaHoy
+      ? horariosDeFranja(franjaHoy.apertura, franjaHoy.cierre, servicio.duracion, 30)
+      : generarHorarios(9, 19, 30)
+
   // No permitir horarios ya pasados cuando el día elegido es hoy (hora de Cuenca).
   // Compara el día del chip (calendario local que el usuario ve) con el hoy de Cuenca,
   // así funciona aunque el dispositivo esté en otra zona horaria (ej. test desde Brasil).
@@ -44,6 +55,18 @@ export default function ReservarPage() {
     }
     return true
   })
+
+  // Días cerrados (para atenuar los chips del calendario)
+  const esDiaCerrado = (d) => {
+    if (!usaHorarioReal) return false
+    const f = franjaDelDia(negocio.horarioSemanal, d)
+    return !f || !f.abierto
+  }
+
+  // Al cambiar de día, limpiar la hora elegida (evita confirmar un horario inválido).
+  useEffect(() => {
+    setHora(null)
+  }, [fecha])
 
   const confirmar = () => {
     if (!hora) return
@@ -136,6 +159,7 @@ export default function ReservarPage() {
                 activo={empleado === e.id}
                 onClick={() => setEmpleado(e.id)}
                 avatar={e.avatar}
+                foto={e.foto}
                 nombre={e.nombre.split(' ')[0]}
                 cargo={e.cargo}
               />
@@ -149,6 +173,7 @@ export default function ReservarPage() {
         <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5">
           {dias.map((d) => {
             const sel = d.toDateString() === fecha.toDateString()
+            const cerrado = esDiaCerrado(d)
             return (
               <button
                 key={d.toISOString()}
@@ -156,13 +181,18 @@ export default function ReservarPage() {
                 className={`shrink-0 w-14 py-2.5 rounded-2xl border-2 transition flex flex-col items-center ${
                   sel
                     ? 'border-marca-500 bg-marca-500 text-white'
-                    : 'border-white/10 hover:border-white/20 text-zinc-200'
+                    : cerrado
+                      ? 'border-white/5 text-zinc-500 opacity-50'
+                      : 'border-white/10 hover:border-white/20 text-zinc-200'
                 }`}
               >
                 <span className="text-[10px] uppercase tracking-wide font-medium">
                   {diasSemanaCorto(d)}
                 </span>
                 <span className="text-xl font-semibold leading-tight">{d.getDate()}</span>
+                {cerrado && !sel && (
+                  <span className="text-[8px] uppercase tracking-wide">Cerrado</span>
+                )}
               </button>
             )
           })}
@@ -171,21 +201,31 @@ export default function ReservarPage() {
 
       {/* Hora */}
       <Section titulo="Horarios disponibles">
-        <div className="grid grid-cols-4 gap-2">
-          {horariosFiltrados.map((h) => (
-            <button
-              key={h}
-              onClick={() => setHora(h)}
-              className={`py-2.5 rounded-xl text-sm font-medium border-2 transition ${
-                hora === h
-                  ? 'border-marca-500 bg-marca-500 text-white'
-                  : 'border-white/10 hover:border-white/20 text-zinc-200'
-              }`}
-            >
-              {h}
-            </button>
-          ))}
-        </div>
+        {diaCerrado ? (
+          <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-5 text-center text-sm text-zinc-400">
+            El negocio está <span className="font-medium text-zinc-200">cerrado</span> este día. Elige otra fecha.
+          </div>
+        ) : horariosFiltrados.length === 0 ? (
+          <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-5 text-center text-sm text-zinc-400">
+            No quedan horarios disponibles para este día. Prueba con otra fecha.
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-2">
+            {horariosFiltrados.map((h) => (
+              <button
+                key={h}
+                onClick={() => setHora(h)}
+                className={`py-2.5 rounded-xl text-sm font-medium border-2 transition ${
+                  hora === h
+                    ? 'border-marca-500 bg-marca-500 text-white'
+                    : 'border-white/10 hover:border-white/20 text-zinc-200'
+                }`}
+              >
+                {h}
+              </button>
+            ))}
+          </div>
+        )}
       </Section>
 
       {/* Pago */}
@@ -251,7 +291,7 @@ function Section({ titulo, children }) {
   )
 }
 
-function ChipPersona({ activo, onClick, avatar, nombre, cargo }) {
+function ChipPersona({ activo, onClick, avatar, foto, nombre, cargo }) {
   return (
     <button
       onClick={onClick}
@@ -261,11 +301,15 @@ function ChipPersona({ activo, onClick, avatar, nombre, cargo }) {
           : 'border-white/10 hover:border-white/20 bg-nocturno-500'
       }`}
     >
-      <div className={`w-9 h-9 rounded-full grid place-items-center text-xs font-semibold ${
-        activo ? 'bg-marca-500 text-white' : 'bg-white/10 text-zinc-300'
-      }`}>
-        {avatar}
-      </div>
+      {foto ? (
+        <img src={foto} alt={nombre} className="w-9 h-9 rounded-full object-cover border border-white/10" />
+      ) : (
+        <div className={`w-9 h-9 rounded-full grid place-items-center text-xs font-semibold ${
+          activo ? 'bg-marca-500 text-white' : 'bg-white/10 text-zinc-300'
+        }`}>
+          {avatar}
+        </div>
+      )}
       <div className="text-left">
         <div className={`text-sm font-medium ${activo ? 'text-marca-700' : 'text-white'}`}>{nombre}</div>
         <div className="text-[10px] text-zinc-400">{cargo}</div>

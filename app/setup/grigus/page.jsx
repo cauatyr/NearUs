@@ -131,7 +131,7 @@ export default function SetupGrigusPage() {
               </div>
 
               <button
-                onClick={() => router.replace('/negocio/agenda')}
+                onClick={() => router.replace('/negocio/inicio')}
                 className="mt-5 w-full bg-marca-500 hover:bg-marca-600 text-white font-semibold py-3 rounded-full"
               >
                 Ir al panel de grigus

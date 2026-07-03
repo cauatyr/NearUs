@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react'
 import { Plus, Edit3, Trash2, Phone, Briefcase, X, Check } from 'lucide-react'
 import { useDatosStore } from '@/lib/store-datos'
 import { useSesion } from '@/lib/store-sesion'
+import CampoFoto from '@/components/CampoFoto'
 
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
@@ -39,7 +40,8 @@ export default function EmpleadosPage() {
           cargo: datos.cargo,
           avatar,
           celular: datos.celular,
-          diasTrabajo: datos.diasTrabajo
+          diasTrabajo: datos.diasTrabajo,
+          foto: datos.foto ?? null
         })
       : await agregarEmpleado({
           negocioId,
@@ -47,7 +49,8 @@ export default function EmpleadosPage() {
           cargo: datos.cargo,
           avatar,
           celular: datos.celular,
-          diasTrabajo: datos.diasTrabajo
+          diasTrabajo: datos.diasTrabajo,
+          foto: datos.foto ?? null
         })
     if (err) {
       setError(err)
@@ -95,9 +98,17 @@ export default function EmpleadosPage() {
           <div key={e.id} className="bg-nocturno-500 rounded-2xl border border-white/10 p-5 hover:border-marca-200 transition">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-full bg-marca-500/15 grid place-items-center text-marca-600 font-semibold">
-                  {e.avatar}
-                </div>
+                {e.foto ? (
+                  <img
+                    src={e.foto}
+                    alt={e.nombre}
+                    className="w-14 h-14 rounded-full object-cover border border-white/10"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-full bg-marca-500/15 grid place-items-center text-marca-600 font-semibold">
+                    {e.avatar}
+                  </div>
+                )}
                 <div>
                   <div className="font-semibold text-white">{e.nombre}</div>
                   <div className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
@@ -160,7 +171,8 @@ function ModalEmpleado({ empleado, onGuardar, onCerrar }) {
     nombre: empleado.nombre || '',
     cargo: empleado.cargo || '',
     celular: empleado.celular || '+593 ',
-    diasTrabajo: empleado.diasTrabajo || ['Lun', 'Mar', 'Mié', 'Jue', 'Vie']
+    diasTrabajo: empleado.diasTrabajo || ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
+    foto: empleado.foto || null
   })
 
   const toggleDia = (d) => {
@@ -187,6 +199,12 @@ function ModalEmpleado({ empleado, onGuardar, onCerrar }) {
         </div>
 
         <div className="mt-5 space-y-4">
+          <CampoFoto
+            label="Foto del profesional"
+            valor={datos.foto}
+            onChange={(v) => setDatos({ ...datos, foto: v })}
+            forma="circulo"
+          />
           <Campo
             label="Nombre completo"
             valor={datos.nombre}

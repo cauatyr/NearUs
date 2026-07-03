@@ -5,6 +5,7 @@ import { useDatosStore } from '@/lib/store-datos'
 import { useSesion } from '@/lib/store-sesion'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { formatoUSD, formatoDuracion } from '@/lib/utils'
+import CampoFoto from '@/components/CampoFoto'
 
 export default function ServiciosPage() {
   const negocioId = useSesion((s) => s.negocioId)
@@ -75,6 +76,13 @@ export default function ServiciosPage() {
         ) : (
           servicios.map((s) => (
             <div key={s.id} className="flex items-center justify-between gap-3 p-4 border-b border-zinc-50 last:border-b-0 hover:bg-zinc-50/50 transition">
+              {s.foto ? (
+                <img src={s.foto} alt={s.nombre} className="w-12 h-12 rounded-xl object-cover border border-white/10 shrink-0" />
+              ) : (
+                <div className="w-12 h-12 rounded-xl bg-marca-500/10 grid place-items-center text-marca-600 shrink-0">
+                  <Clock className="w-5 h-5" />
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-white">{s.nombre}</div>
                 <div className="mt-1 text-xs text-zinc-400 flex items-center gap-3">
@@ -132,7 +140,8 @@ function ModalServicio({ servicio, onGuardar, onCerrar }) {
     nombre: servicio.nombre || '',
     duracion: servicio.duracion || 30,
     precio: servicio.precio || 10,
-    categoria: servicio.categoria || 'barberia'
+    categoria: servicio.categoria || 'barberia',
+    foto: servicio.foto || null
   })
 
   const valido = datos.nombre && datos.duracion > 0 && datos.precio > 0
@@ -150,6 +159,12 @@ function ModalServicio({ servicio, onGuardar, onCerrar }) {
         </div>
 
         <div className="mt-5 space-y-4">
+          <CampoFoto
+            label="Foto del servicio"
+            valor={datos.foto}
+            onChange={(v) => setDatos({ ...datos, foto: v })}
+            forma="cuadrado"
+          />
           <div>
             <label className="text-xs font-medium text-zinc-300">Nombre del servicio</label>
             <input

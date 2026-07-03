@@ -2,6 +2,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import SidebarNegocio from '@/components/SidebarNegocio'
+import AvisoReservasNegocio from '@/components/AvisoReservasNegocio'
 import { useSesion } from '@/lib/store-sesion'
 
 export default function NegocioLayout({ children }) {
@@ -35,6 +36,7 @@ export default function NegocioLayout({ children }) {
     <div className="min-h-screen bg-nocturno-700">
       <SidebarNegocio />
       <main className="md:ml-72 min-h-screen">{children}</main>
+      <AvisoReservasNegocio />
     </div>
   )
 }
