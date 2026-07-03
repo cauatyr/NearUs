@@ -1,7 +1,8 @@
 'use client'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { Calendar, Heart, Star, ChevronRight, Settings, LogOut, Award } from 'lucide-react'
+import { Calendar, Heart, Star, ChevronRight, Settings, LogOut, Pencil, BadgeCheck } from 'lucide-react'
+import ModalEditarPerfil from '@/components/ModalEditarPerfil'
 import { useReservas } from '@/lib/store'
 import { useCliente } from '@/lib/store-cliente'
 import { useDatosStore } from '@/lib/store-datos'
@@ -13,6 +14,7 @@ import { useUbicacion } from '@/lib/store'
 
 export default function PerfilPage() {
   const [tab, setTab] = useState('reservas')
+  const [editando, setEditando] = useState(false)
   const { favoritos } = useReservas()
   const { posicion } = useUbicacion()
   const NEGOCIOS = useNegocios()
@@ -36,41 +38,67 @@ export default function PerfilPage() {
 
   return (
     <div className="pb-24">
-      {/* Cabecera */}
-      <div className="bg-gradient-to-br from-marca-500 to-marca-700 text-white px-5 pt-10 pb-12 relative">
-        {cliente ? (
-          <button
-            onClick={cerrarSesion}
-            title="Cerrar sesión"
-            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/15 grid place-items-center hover:bg-white/25 transition"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        ) : (
-          <button className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/15 grid place-items-center">
-            <Settings className="w-4 h-4" />
-          </button>
-        )}
-        <div className="w-20 h-20 rounded-full bg-white/20 grid place-items-center text-2xl font-semibold">
-          {iniciales}
-        </div>
-        <div className="mt-4">
-          {cliente ? (
-            <>
-              <h1 className="text-xl font-semibold">{cliente.nombre}</h1>
-              <p className="text-marca-100 text-sm">{cliente.email}</p>
-            </>
-          ) : (
-            <>
-              <h1 className="text-xl font-semibold">Invitado</h1>
-              <Link
-                href="/cuenta"
-                className="mt-2 inline-block bg-white/15 hover:bg-white/25 transition rounded-full px-4 py-1.5 text-sm font-medium"
-              >
-                Iniciar sesión o crear cuenta
-              </Link>
-            </>
+      {/* Cabecera premium (oscura + glow de marca) */}
+      <div className="relative overflow-hidden px-5 pt-10 pb-14">
+        <div
+          className="pointer-events-none absolute -top-24 -right-16 w-72 h-72 rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(43,172,226,0.22), transparent 70%)' }}
+        />
+        <div
+          className="pointer-events-none absolute -top-10 left-0 w-56 h-56 rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.10), transparent 70%)' }}
+        />
+
+        {/* Acciones */}
+        <div className="relative flex justify-end gap-2">
+          {cliente && (
+            <button
+              onClick={() => setEditando(true)}
+              title="Editar perfil"
+              className="w-9 h-9 rounded-full bg-white/10 grid place-items-center text-zinc-200 hover:bg-white/20 transition"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
           )}
+          <button
+            onClick={cliente ? cerrarSesion : undefined}
+            title={cliente ? 'Cerrar sesión' : 'Ajustes'}
+            className="w-9 h-9 rounded-full bg-white/10 grid place-items-center text-zinc-200 hover:bg-white/20 transition"
+          >
+            {cliente ? <LogOut className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
+          </button>
+        </div>
+
+        {/* Avatar + identidad */}
+        <div className="relative mt-2 flex items-center gap-4">
+          <div className="w-20 h-20 rounded-full overflow-hidden bg-marca-500/15 grid place-items-center text-2xl font-bold text-marca-300 ring-2 ring-marca-500/40 shrink-0">
+            {cliente?.foto ? (
+              <img src={cliente.foto} alt="" className="w-full h-full object-cover" />
+            ) : (
+              iniciales
+            )}
+          </div>
+          <div className="min-w-0">
+            {cliente ? (
+              <>
+                <h1 className="text-xl font-bold text-white truncate">{cliente.nombre}</h1>
+                <span className="inline-flex items-center gap-1 mt-1 bg-marca-500/15 text-marca-300 text-[11px] font-semibold px-2 py-0.5 rounded-full ring-1 ring-marca-500/25">
+                  <BadgeCheck className="w-3.5 h-3.5" /> Cliente verificado
+                </span>
+                <p className="mt-1.5 text-sm text-zinc-400 truncate">{cliente.email}</p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-xl font-bold text-white">Invitado</h1>
+                <Link
+                  href="/cuenta"
+                  className="mt-2 inline-block bg-marca-500 hover:bg-marca-600 transition rounded-full px-4 py-1.5 text-sm font-semibold text-white"
+                >
+                  Iniciar sesión o crear cuenta
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -149,6 +177,8 @@ export default function PerfilPage() {
           </>
         )}
       </div>
+
+      {editando && <ModalEditarPerfil onClose={() => setEditando(false)} />}
     </div>
   )
 }
