@@ -36,7 +36,9 @@ export default function DetalleNegocio() {
 
   if (!negocio) return notFound()
   const categoria = CATEGORIAS.find((c) => c.id === negocio.categoria)
-  const imagenes = [...new Set([negocio.portada, negocio.imagen].filter(Boolean))]
+  const imagenes = [
+    ...new Set([negocio.portada, negocio.imagen, ...(negocio.galeria || [])].filter(Boolean))
+  ]
 
   const compartir = () =>
     navigator.share?.({ title: negocio.nombre, text: `Mira ${negocio.nombre} en NearUs` })
