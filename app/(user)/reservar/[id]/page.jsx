@@ -8,7 +8,7 @@ import {
 import { useReservas } from '@/lib/store'
 import { useCliente } from '@/lib/store-cliente'
 import { useDatosStore } from '@/lib/store-datos'
-import { formatoUSD, formatoDuracion, siguientesDias, generarHorarios, diasSemanaCorto, ahoraEnCuenca, diaLocalISO, franjaDelDia, horariosDeFranja } from '@/lib/utils'
+import { formatoUSD, formatoDuracion, siguientesDias, generarHorarios, diasSemanaCorto, ahoraEnCuenca, diaLocalISO, franjaDelDia, horariosDeFranja, textoFranja } from '@/lib/utils'
 
 export default function ReservarPage() {
   const { id } = useParams()
@@ -39,7 +39,7 @@ export default function ReservarPage() {
   const horarios = diaCerrado
     ? []
     : usaHorarioReal && franjaHoy
-      ? horariosDeFranja(franjaHoy.apertura, franjaHoy.cierre, servicio.duracion, 30)
+      ? horariosDeFranja(franjaHoy.apertura, franjaHoy.cierre, servicio.duracion, 30, franjaHoy.pausa)
       : generarHorarios(9, 19, 30)
 
   // No permitir horarios ya pasados cuando el día elegido es hoy (hora de Cuenca).
@@ -201,6 +201,9 @@ export default function ReservarPage() {
 
       {/* Hora */}
       <Section titulo="Horarios disponibles">
+        {!diaCerrado && usaHorarioReal && franjaHoy && (
+          <p className="-mt-1 mb-2.5 text-xs text-zinc-500">Atiende {textoFranja(franjaHoy)}</p>
+        )}
         {diaCerrado ? (
           <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-5 text-center text-sm text-zinc-400">
             El negocio está <span className="font-medium text-zinc-200">cerrado</span> este día. Elige otra fecha.

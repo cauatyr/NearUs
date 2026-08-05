@@ -5,7 +5,7 @@ import { Star, MapPin, Zap, Heart } from 'lucide-react'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { serviciosDeNegocio } from '@/lib/data/negocios'
 import { useReservas } from '@/lib/store'
-import { distanciaKm, formatoDistancia, formatoUSD, horarioAbierto } from '@/lib/utils'
+import { distanciaKm, formatoDistancia, formatoUSD, horarioAbierto, horarioAbiertoDeSemanal } from '@/lib/utils'
 import { ImagenSuave } from '@/components/Skeleton'
 
 // Botón de favorito con animación de "pop". Reutilizado en las dos variantes.
@@ -38,7 +38,9 @@ function datos(negocio, usuario) {
   const distancia = usuario ? distanciaKm(usuario.lat, usuario.lng, negocio.lat, negocio.lng) : null
   const precios = serviciosDeNegocio(negocio.id).map((s) => s.precio)
   const precioDesde = precios.length ? Math.min(...precios) : null
-  const abierto = horarioAbierto(negocio.horario)
+  // El horario estructurado sabe de días y de pausa de almuerzo; el texto no.
+  // Sólo caemos al texto cuando el negocio todavía no configuró su horario.
+  const abierto = horarioAbiertoDeSemanal(negocio.horarioSemanal) ?? horarioAbierto(negocio.horario)
   return { categoria, distancia, precioDesde, abierto }
 }
 

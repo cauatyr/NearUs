@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import { useSesion } from '@/lib/store-sesion'
 import { useDatosStore } from '@/lib/store-datos'
-import { formatoUSD, formatoDuracion, franjaDelDia, resumenHorario } from '@/lib/utils'
+import { formatoUSD, formatoDuracion, franjaDelDia, resumenHorario, pausaValida } from '@/lib/utils'
 
 export default function InicioPage() {
   const negocioId = useSesion((s) => s.negocioId)
@@ -46,7 +46,9 @@ export default function InicioPage() {
     const franja = negocio ? franjaDelDia(negocio.horarioSemanal, ahora) : null
     if (franja && franja.abierto) {
       const toMin = (t) => { const [h, m] = String(t).split(':').map(Number); return h * 60 + m }
-      const disp = toMin(franja.cierre) - toMin(franja.apertura)
+      // La pausa (almuerzo) no es tiempo vendible → se descuenta de la capacidad.
+      const pausaMin = pausaValida(franja) ? toMin(franja.pausa.fin) - toMin(franja.pausa.inicio) : 0
+      const disp = toMin(franja.cierre) - toMin(franja.apertura) - pausaMin
       const usado = reservasHoy.reduce((s, r) => s + (r.duracion || 0), 0)
       ocupacion = disp > 0 ? Math.min(100, Math.round((usado / disp) * 100)) : null
     }

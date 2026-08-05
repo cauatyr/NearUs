@@ -6,7 +6,7 @@ import { useReservasDemo, obtenerServicioDemo, obtenerEmpleadoDemo } from '@/lib
 import { empleadosDeNegocio } from '@/lib/data/negocios'
 import { useSesion } from '@/lib/store-sesion'
 import { useDatosStore } from '@/lib/store-datos'
-import { formatoUSD, mesCorto, siguientesDias, generarHorarios, diasSemanaCorto, franjaDelDia } from '@/lib/utils'
+import { formatoUSD, mesCorto, siguientesDias, generarHorarios, diasSemanaCorto, franjaDelDia, pausaValida } from '@/lib/utils'
 
 // Paleta de colores por profesional (distinguibles sobre fondo oscuro)
 const PALETA_EMP = ['#3B82F6', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#EF4444', '#14B8A6', '#F97316']
@@ -217,6 +217,14 @@ function TimelineDia({ reservas, franja, esHoy, ahoraMin, empleados, onSelect })
             {apMin > rangoIni && <ZonaCerrada top={0} height={(apMin - rangoIni) * PX_POR_MIN} />}
             {ciMin < endH * 60 && (
               <ZonaCerrada top={top(ciMin)} height={(endH * 60 - ciMin) * PX_POR_MIN} />
+            )}
+            {/* Pausa (almuerzo): mismo gris, en medio del día */}
+            {pausaValida(franja) && (
+              <ZonaCerrada
+                top={top(toMin(franja.pausa.inicio))}
+                height={(toMin(franja.pausa.fin) - toMin(franja.pausa.inicio)) * PX_POR_MIN}
+                etiqueta="Pausa"
+              />
             )}
           </>
         ) : (
