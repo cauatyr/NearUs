@@ -1,9 +1,9 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { notFound, useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  ArrowLeft, Star, Clock, MapPin, Phone, Heart, Share2, Zap, Calendar, ChevronRight, BadgeCheck, MessageSquare
+  ArrowLeft, Star, Clock, MapPin, Phone, Heart, Share2, Zap, Calendar, ChevronLeft, ChevronRight, BadgeCheck, MessageSquare
 } from 'lucide-react'
 import { obtenerNegocio, serviciosDeNegocio, empleadosDeNegocio } from '@/lib/data/negocios'
 import { CATEGORIAS } from '@/lib/data/categorias'
@@ -259,13 +259,30 @@ export default function DetalleNegocio() {
 
 function Galeria({ imagenes, children }) {
   const [idx, setIdx] = useState(0)
+  const scroller = useRef(null)
+  const varias = imagenes.length > 1
+
   const onScroll = (e) => {
     const w = e.currentTarget.clientWidth || 1
     setIdx(Math.round(e.currentTarget.scrollLeft / w))
   }
+
+  // En mobile se pasa con el dedo; en desktop el mouse NO arrastra un contenedor
+  // con overflow, así que hacen falta las flechas y los puntos clicables.
+  const irA = (i) => {
+    const el = scroller.current
+    if (!el) return
+    const destino = Math.max(0, Math.min(i, imagenes.length - 1))
+    el.scrollTo({ left: destino * el.clientWidth, behavior: 'smooth' })
+  }
+
   return (
-    <div className="relative h-64 bg-white/10">
-      <div onScroll={onScroll} className="flex h-full overflow-x-auto snap-x snap-mandatory no-scrollbar">
+    <div className="relative h-64 bg-white/10 group">
+      <div
+        ref={scroller}
+        onScroll={onScroll}
+        className="flex h-full overflow-x-auto snap-x snap-mandatory no-scrollbar"
+      >
         {imagenes.map((src, i) => (
           <div key={i} className="relative w-full h-full shrink-0 snap-center">
             <ImagenSuave src={src} alt="" sizes="(max-width:768px) 100vw, 500px" priority={i === 0} />
@@ -274,17 +291,50 @@ function Galeria({ imagenes, children }) {
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/25 pointer-events-none" />
       {children}
-      {imagenes.length > 1 && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-          {imagenes.map((_, i) => (
-            <span
-              key={i}
-              className={`h-1.5 rounded-full transition-all ${i === idx ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`}
-            />
-          ))}
-        </div>
+
+      {varias && (
+        <>
+          <FlechaGaleria
+            lado="izq"
+            oculta={idx === 0}
+            onClick={() => irA(idx - 1)}
+          />
+          <FlechaGaleria
+            lado="der"
+            oculta={idx === imagenes.length - 1}
+            onClick={() => irA(idx + 1)}
+          />
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {imagenes.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => irA(i)}
+                aria-label={`Foto ${i + 1} de ${imagenes.length}`}
+                className={`h-1.5 rounded-full transition-all ${i === idx ? 'w-5 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'}`}
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
+  )
+}
+
+function FlechaGaleria({ lado, oculta, onClick }) {
+  const Icono = lado === 'izq' ? ChevronLeft : ChevronRight
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={lado === 'izq' ? 'Foto anterior' : 'Foto siguiente'}
+      className={`absolute top-1/2 -translate-y-1/2 ${lado === 'izq' ? 'left-3' : 'right-3'}
+        w-9 h-9 rounded-full bg-black/45 backdrop-blur grid place-items-center shadow-md
+        transition hover:bg-black/65 active:scale-95
+        ${oculta ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+    >
+      <Icono className="w-5 h-5 text-white" />
+    </button>
   )
 }
 
