@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { useDatosStore } from '@/lib/store-datos'
 import { useSesion } from '@/lib/store-sesion'
-import { fetchAdmin } from '@/lib/store-admin'
+import { fetchAdmin, useAdmin } from '@/lib/store-admin'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { detectarCiudad } from '@/lib/data/ciudades'
 import { formatoUSD, logoPlaceholder, comisionDeReservas, resumenHorario } from '@/lib/utils'
@@ -25,6 +25,10 @@ export default function FichaNegocioPage() {
   const absorberNegocio = useDatosStore((s) => s.absorberNegocio)
   const olvidarNegocio = useDatosStore((s) => s.olvidarNegocio)
   const entrarComoNegocio = useSesion((s) => s.entrarComoNegocio)
+  const verFinanzas = useAdmin((s) => s.puede('finanzas.ver'))
+  const puedeEditar = useAdmin((s) => s.puede('negocios.editar'))
+  const puedeEliminar = useAdmin((s) => s.puede('negocios.eliminar'))
+  const puedeGestionar = useAdmin((s) => s.puede('negocios.gestionar'))
 
   const [dueno, setDueno] = useState(null)
   const [guardando, setGuardando] = useState(null)
@@ -126,12 +130,14 @@ export default function FichaNegocioPage() {
           <p className="text-[11px] text-zinc-600 mt-1 font-mono">{negocio.id}</p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={gestionar}
-            className="bg-marca-500 hover:bg-marca-600 text-white font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition"
-          >
-            <Settings2 className="w-4 h-4" /> Gestionar
-          </button>
+          {puedeGestionar && (
+            <button
+              onClick={gestionar}
+              className="bg-marca-500 hover:bg-marca-600 text-white font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition"
+            >
+              <Settings2 className="w-4 h-4" /> Gestionar
+            </button>
+          )}
           <Link
             href={`/explorar/${negocio.id}`}
             className="bg-white/5 hover:bg-white/10 text-zinc-200 font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition"
@@ -150,8 +156,12 @@ export default function FichaNegocioPage() {
       {/* Métricas */}
       <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Metrica icono={Calendar} label="Reservas" valor={propios.reservas.length} pie={`${propios.canceladas} canceladas`} />
-        <Metrica icono={DollarSign} label="Facturado" valor={formatoUSD(propios.ingresos)} pie={`${formatoUSD(propios.cobradoEnApp)} en la app`} />
-        <Metrica icono={DollarSign} label="Comisión NearUs" valor={formatoUSD(propios.comision)} pie="Sólo pagos in-app" />
+        {verFinanzas && (
+          <>
+            <Metrica icono={DollarSign} label="Facturado" valor={formatoUSD(propios.ingresos)} pie={`${formatoUSD(propios.cobradoEnApp)} en la app`} />
+            <Metrica icono={DollarSign} label="Comisión NearUs" valor={formatoUSD(propios.comision)} pie="Sólo pagos in-app" />
+          </>
+        )}
         <Metrica
           icono={Star}
           label="Reseñas"
@@ -205,6 +215,7 @@ export default function FichaNegocioPage() {
             </div>
           )}
 
+          {puedeEditar && (
           <div className="pt-2 space-y-2">
             <BotonEstado
               activo={negocio.aceptaAhora}
@@ -221,6 +232,7 @@ export default function FichaNegocioPage() {
               nota="Corona dorada en la lista"
             />
           </div>
+          )}
         </Panel>
 
         {/* Servicios */}
@@ -277,7 +289,9 @@ export default function FichaNegocioPage() {
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-white font-medium tabular-nums">{formatoUSD(r.precio)}</div>
+                      {verFinanzas && (
+                        <div className="text-white font-medium tabular-nums">{formatoUSD(r.precio)}</div>
+                      )}
                       <div className={`text-[11px] ${r.estado === 'cancelada' ? 'text-red-300' : 'text-zinc-500'}`}>
                         {r.estado}
                       </div>
@@ -290,6 +304,7 @@ export default function FichaNegocioPage() {
       </div>
 
       {/* Zona peligrosa */}
+      {puedeEliminar && (
       <div className="mt-5 bg-red-500/5 border border-red-500/25 rounded-2xl p-5">
         <div className="flex items-center gap-2 text-red-300 font-semibold text-sm">
           <AlertTriangle className="w-4 h-4" /> Eliminar negocio
@@ -306,6 +321,7 @@ export default function FichaNegocioPage() {
           <Trash2 className="w-4 h-4" /> Eliminar este negocio
         </button>
       </div>
+      )}
 
       {modalBorrar && (
         <ModalBorrar

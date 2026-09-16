@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Search, Plus, Store, ExternalLink, Settings2, Crown, Zap, UserX } from 'lucide-react'
 import { useDatosStore } from '@/lib/store-datos'
 import { useSesion } from '@/lib/store-sesion'
+import { useAdmin } from '@/lib/store-admin'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { detectarCiudad } from '@/lib/data/ciudades'
 import { logoPlaceholder } from '@/lib/utils'
@@ -24,6 +25,8 @@ export default function AdminNegociosPage() {
   const empleados = useDatosStore((s) => s.empleados)
   const reservas = useDatosStore((s) => s.reservas)
   const entrarComoNegocio = useSesion((s) => s.entrarComoNegocio)
+  const puedeCrear = useAdmin((s) => s.puede('negocios.crear'))
+  const puedeGestionar = useAdmin((s) => s.puede('negocios.gestionar'))
 
   const [busqueda, setBusqueda] = useState('')
   const [categoria, setCategoria] = useState('todas')
@@ -72,12 +75,14 @@ export default function AdminNegociosPage() {
             {filas.length} de {negocios.length} negocios
           </p>
         </div>
-        <Link
-          href="/admin/negocios/nuevo"
-          className="bg-marca-500 hover:bg-marca-600 text-white font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition"
-        >
-          <Plus className="w-4 h-4" /> Nuevo negocio
-        </Link>
+        {puedeCrear && (
+          <Link
+            href="/admin/negocios/nuevo"
+            className="bg-marca-500 hover:bg-marca-600 text-white font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition"
+          >
+            <Plus className="w-4 h-4" /> Nuevo negocio
+          </Link>
+        )}
       </div>
 
       {/* Filtros */}
@@ -195,13 +200,15 @@ export default function AdminNegociosPage() {
               </div>
 
               <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  onClick={() => gestionar(n.id)}
-                  className="h-9 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition"
-                  title="Abrir el panel de este negocio"
-                >
-                  <Settings2 className="w-3.5 h-3.5" /> Gestionar
-                </button>
+                {puedeGestionar && (
+                  <button
+                    onClick={() => gestionar(n.id)}
+                    className="h-9 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition"
+                    title="Abrir el panel de este negocio"
+                  >
+                    <Settings2 className="w-3.5 h-3.5" /> Gestionar
+                  </button>
+                )}
                 <Link
                   href={`/admin/negocios/${n.id}`}
                   className="w-9 h-9 grid place-items-center rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 transition"

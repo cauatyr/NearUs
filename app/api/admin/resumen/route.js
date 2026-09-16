@@ -5,8 +5,11 @@ export const dynamic = 'force-dynamic'
 // GET /api/admin/resumen
 // Lo que la anon key NO puede ver: las cuentas de auth (emails, alta, último
 // acceso). El panel lo cruza con negocios (dueños) y reservas (clientes).
+//
+// Quien no tenga 'clientes.ver' recibe SÓLO las cuentas que son dueñas de algún
+// negocio — necesarias para la ficha — y ninguna cuenta de cliente.
 export async function GET(request) {
-  const { error, status, admin } = await verificarAdmin(request)
+  const { error, status, admin, permisos } = await verificarAdmin(request, 'negocios.ver')
   if (error) return errorJson(error, status)
 
   const usuarios = []
@@ -33,5 +36,15 @@ export async function GET(request) {
     pagina += 1
   }
 
-  return Response.json({ usuarios })
+  if (permisos.includes('clientes.ver')) {
+    return Response.json({ usuarios, completo: true })
+  }
+
+  const { data: duenos } = await admin.from('negocios').select('owner_user_id')
+  const ids = new Set((duenos ?? []).map((n) => n.owner_user_id).filter(Boolean))
+
+  return Response.json({
+    usuarios: usuarios.filter((u) => ids.has(u.id)),
+    completo: false
+  })
 }

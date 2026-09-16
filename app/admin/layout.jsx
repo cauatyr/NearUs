@@ -3,15 +3,16 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, Store, Users, Lock, Mail, AlertCircle, LogOut, Menu, X, Plus
+  LayoutDashboard, Store, Users, Lock, Mail, AlertCircle, LogOut, Menu, X, Plus, ShieldCheck
 } from 'lucide-react'
 import { useAdmin } from '@/lib/store-admin'
 import Logo from '@/components/Logo'
 
 const SECCIONES = [
   { href: '/admin', icono: LayoutDashboard, label: 'Visión general', desc: 'Métricas de la plataforma', exacto: true },
-  { href: '/admin/negocios', icono: Store, label: 'Negocios', desc: 'Ver, crear y eliminar' },
-  { href: '/admin/clientes', icono: Users, label: 'Clientes', desc: 'Cuentas y reservas' }
+  { href: '/admin/negocios', icono: Store, label: 'Negocios', desc: 'Ver, crear y eliminar', permiso: 'negocios.ver' },
+  { href: '/admin/clientes', icono: Users, label: 'Clientes', desc: 'Cuentas y reservas', permiso: 'clientes.ver' },
+  { href: '/admin/equipo', icono: ShieldCheck, label: 'Equipo', desc: 'Admins y permisos', permiso: 'admins.gestionar' }
 ]
 
 export default function AdminLayout({ children }) {
@@ -131,8 +132,14 @@ function LoginAdmin() {
 function SidebarAdmin() {
   const pathname = usePathname()
   const email = useAdmin((s) => s.email)
+  const nombre = useAdmin((s) => s.nombre)
+  const permisos = useAdmin((s) => s.permisos)
   const cerrarSesion = useAdmin((s) => s.cerrarSesion)
   const [abierto, setAbierto] = useState(false)
+
+  // Lo que no puede usar, no se muestra. La barrera real está en el servidor.
+  const secciones = SECCIONES.filter((s) => !s.permiso || permisos.includes(s.permiso))
+  const puedeCrear = permisos.includes('negocios.crear')
 
   useEffect(() => {
     setAbierto(false)
@@ -184,7 +191,7 @@ function SidebarAdmin() {
         </div>
 
         <nav className="flex-1 p-3 overflow-y-auto">
-          {SECCIONES.map((s) => {
+          {secciones.map((s) => {
             const activo = s.exacto ? pathname === s.href : pathname?.startsWith(s.href)
             return (
               <Link
@@ -205,16 +212,20 @@ function SidebarAdmin() {
             )
           })}
 
-          <Link
-            href="/admin/negocios/nuevo"
-            className="mt-3 flex items-center gap-2 justify-center px-3 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-sm transition"
-          >
-            <Plus className="w-4 h-4 text-marca-500" /> Nuevo negocio
-          </Link>
+          {puedeCrear && (
+            <Link
+              href="/admin/negocios/nuevo"
+              className="mt-3 flex items-center gap-2 justify-center px-3 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-sm transition"
+            >
+              <Plus className="w-4 h-4 text-marca-500" /> Nuevo negocio
+            </Link>
+          )}
         </nav>
 
         <div className="p-3 border-t border-white/10">
-          <div className="px-3 pb-2 text-[11px] text-zinc-500 truncate">{email}</div>
+          <div className="px-3 pb-2 text-[11px] text-zinc-500 truncate">
+            {nombre ? `${nombre} · ${email}` : email}
+          </div>
           <button
             onClick={cerrarSesion}
             className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 text-zinc-200"

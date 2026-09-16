@@ -29,7 +29,7 @@ async function buscarUsuarioPorEmail(admin, email) {
 // deslogueado y logueado como el dueño nuevo. Con service_role (createUser) la
 // sesión del admin no se toca.
 export async function POST(request) {
-  const { error, status, admin } = await verificarAdmin(request)
+  const { error, status, admin } = await verificarAdmin(request, 'negocios.crear')
   if (error) return errorJson(error, status)
 
   let body

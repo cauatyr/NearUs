@@ -26,7 +26,7 @@ const CAMPOS = {
 
 // PATCH /api/admin/negocios/<id>
 export async function PATCH(request, { params }) {
-  const { error, status, admin } = await verificarAdmin(request)
+  const { error, status, admin } = await verificarAdmin(request, 'negocios.editar')
   if (error) return errorJson(error, status)
 
   let body
@@ -62,7 +62,7 @@ export async function PATCH(request, { params }) {
 // ?cuenta=1 además borra la cuenta de auth del dueño (sólo si no es dueño de
 // otro negocio).
 export async function DELETE(request, { params }) {
-  const { error, status, admin } = await verificarAdmin(request)
+  const { error, status, admin } = await verificarAdmin(request, 'negocios.eliminar')
   if (error) return errorJson(error, status)
 
   const id = params.id

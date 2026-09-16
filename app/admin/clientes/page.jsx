@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Search, Users, Loader2, Store, Calendar } from 'lucide-react'
 import { useDatosStore } from '@/lib/store-datos'
-import { fetchAdmin } from '@/lib/store-admin'
+import { fetchAdmin, useAdmin } from '@/lib/store-admin'
 import { formatoUSD } from '@/lib/utils'
 
 const FILTROS = [
@@ -16,6 +16,7 @@ const FILTROS = [
 export default function AdminClientesPage() {
   const negocios = useDatosStore((s) => s.negocios)
   const reservas = useDatosStore((s) => s.reservas)
+  const puedeVer = useAdmin((s) => s.puede('clientes.ver'))
 
   const [usuarios, setUsuarios] = useState(null)
   const [error, setError] = useState(null)
@@ -23,6 +24,7 @@ export default function AdminClientesPage() {
   const [filtro, setFiltro] = useState('todos')
 
   useEffect(() => {
+    if (!puedeVer) return
     let vivo = true
     fetchAdmin('/api/admin/resumen').then(({ datos, error: err }) => {
       if (!vivo) return
@@ -32,7 +34,9 @@ export default function AdminClientesPage() {
     return () => {
       vivo = false
     }
-  }, [])
+  }, [puedeVer])
+
+
 
   const filas = useMemo(() => {
     if (!usuarios) return []
@@ -63,6 +67,19 @@ export default function AdminClientesPage() {
       })
       .sort((a, b) => b.reservas - a.reservas || (b.creadoEn || '').localeCompare(a.creadoEn || ''))
   }, [usuarios, reservas, negocios, busqueda, filtro])
+
+  if (!puedeVer) {
+    return (
+      <div className="p-5 md:p-8 max-w-3xl">
+        <div className="bg-nocturno-500 border border-white/10 rounded-2xl p-10 text-center">
+          <Users className="w-8 h-8 text-zinc-600 mx-auto" />
+          <p className="mt-3 text-sm text-zinc-400">
+            Tu cuenta no tiene permiso para ver los datos de los clientes.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-5 md:p-8 max-w-5xl">

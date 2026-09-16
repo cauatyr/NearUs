@@ -5,6 +5,7 @@ import {
   Store, Calendar, DollarSign, Users, Star, Percent, AlertTriangle, ChevronRight, MapPin
 } from 'lucide-react'
 import { useDatosStore } from '@/lib/store-datos'
+import { useAdmin } from '@/lib/store-admin'
 import { CATEGORIAS } from '@/lib/data/categorias'
 import { detectarCiudad, ciudadesActivas } from '@/lib/data/ciudades'
 import { formatoUSD, COMISION_NEARUS, comisionDeReservas } from '@/lib/utils'
@@ -16,6 +17,7 @@ export default function AdminInicioPage() {
   const servicios = useDatosStore((s) => s.servicios)
   const reservas = useDatosStore((s) => s.reservas)
   const resenas = useDatosStore((s) => s.resenas)
+  const verFinanzas = useAdmin((s) => s.puede('finanzas.ver'))
 
   const stats = useMemo(() => {
     const validas = reservas.filter((r) => r.estado !== 'cancelada')
@@ -120,14 +122,18 @@ export default function AdminInicioPage() {
       <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KPI icono={Store} label="Negocios" valor={negocios.length} pie={`${negocios.filter((n) => n.aceptaAhora).length} aceptan ahora`} />
         <KPI icono={Calendar} label="Reservas" valor={stats.reservasTotal} pie={`${stats.reservas30} en los últimos 30 días`} />
-        <KPI icono={DollarSign} label="Volumen (GMV)" valor={formatoUSD(stats.gmv)} pie={`${formatoUSD(stats.cobradoEnApp)} cobrado en la app`} />
-        <KPI
-          icono={Percent}
-          label={`Comisión NearUs (${Math.round(COMISION_NEARUS * 100)}%)`}
-          valor={formatoUSD(stats.comision)}
-          pie="Sólo sobre pagos in-app"
-          acento
-        />
+        {verFinanzas && (
+          <>
+            <KPI icono={DollarSign} label="Volumen (GMV)" valor={formatoUSD(stats.gmv)} pie={`${formatoUSD(stats.cobradoEnApp)} cobrado en la app`} />
+            <KPI
+              icono={Percent}
+              label={`Comisión NearUs (${Math.round(COMISION_NEARUS * 100)}%)`}
+              valor={formatoUSD(stats.comision)}
+              pie="Sólo sobre pagos in-app"
+              acento
+            />
+          </>
+        )}
         <KPI icono={Users} label="Clientes" valor={stats.clientes} pie="Con al menos una reserva" />
         <KPI icono={Star} label="Nota media" valor={stats.notaMedia ? stats.notaMedia.toFixed(1) : '—'} pie={`${resenas.length} reseñas`} />
         <KPI icono={Calendar} label="Canceladas" valor={stats.canceladas} pie="Del total histórico" />
@@ -170,6 +176,7 @@ export default function AdminInicioPage() {
         </Panel>
 
         {/* Top negocios */}
+        {verFinanzas && (
         <Panel titulo="Negocios que más facturan" nota="Volumen acumulado">
           {topNegocios.length === 0 ? (
             <Vacio texto="Todavía no hay reservas." />
@@ -188,6 +195,7 @@ export default function AdminInicioPage() {
             </div>
           )}
         </Panel>
+        )}
 
         {/* Ciudades */}
         <Panel titulo="Cobertura" nota="Negocios por ciudad activa">
