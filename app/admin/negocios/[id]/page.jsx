@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import {
   ArrowLeft, Settings2, ExternalLink, Trash2, AlertTriangle, Loader2, Crown, Zap,
-  MapPin, Phone, Clock, User, Star, Calendar, DollarSign, Store
+  MapPin, Phone, Clock, User, Star, Calendar, DollarSign, Store, FileCheck
 } from 'lucide-react'
 import { useDatosStore } from '@/lib/store-datos'
 import { useSesion } from '@/lib/store-sesion'
@@ -188,6 +188,17 @@ export default function FichaNegocioPage() {
             }
             alerta={!negocio.ownerUserId}
           />
+          <Dato
+            icono={FileCheck}
+            label="Contrato"
+            valor={
+              negocio.terminosAceptadosEn
+                ? `Aceptado el ${new Date(negocio.terminosAceptadosEn).toLocaleDateString('es-EC')} (v${negocio.terminosVersion || '?'})`
+                : 'sin registro de aceptación'
+            }
+            alerta={!negocio.terminosAceptadosEn}
+          />
+
           {dueno?.ultimoAcceso && (
             <div className="text-[11px] text-zinc-500 -mt-2 pl-7">
               Último acceso: {new Date(dueno.ultimoAcceso).toLocaleString('es-EC')}

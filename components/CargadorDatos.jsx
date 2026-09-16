@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useDatosStore } from '@/lib/store-datos'
 import { useSesion } from '@/lib/store-sesion'
 import { useCliente } from '@/lib/store-cliente'
+import AceptarTerminos from '@/components/AceptarTerminos'
 
 export default function CargadorDatos({ children }) {
   const cargado = useDatosStore((s) => s.cargado)
@@ -46,5 +47,12 @@ export default function CargadorDatos({ children }) {
     )
   }
 
-  return children
+  // El modal de términos se monta acá, una sola vez para todo el app: él decide
+  // en qué rutas corresponde mostrarse.
+  return (
+    <>
+      {children}
+      <AceptarTerminos />
+    </>
+  )
 }

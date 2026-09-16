@@ -7,7 +7,8 @@ import { CATEGORIAS } from '@/lib/data/categorias'
 import { useDatosStore } from '@/lib/store-datos'
 import { CIUDAD } from '@/lib/data/negocios'
 import { CIUDADES, ciudadesActivas } from '@/lib/data/ciudades'
-import { comprimirImagen, horarioSemanalDefault, resumenHorario } from '@/lib/utils'
+import { comprimirImagen, horarioSemanalDefault, resumenHorario, COMISION_NEARUS } from '@/lib/utils'
+import { TERMINOS_VERSION } from '@/lib/legal/terminos'
 import Logo from '@/components/Logo'
 import HorarioEditor from '@/components/HorarioEditor'
 
@@ -38,7 +39,8 @@ export default function OnboardingPage() {
     telefono: '',
     email: '',
     password: '',
-    responsable: ''
+    responsable: '',
+    contratoAceptado: false
   })
   const [estado, setEstado] = useState('idle') // 'idle' | 'creando' | 'creado' | 'error'
   const [errorMsg, setErrorMsg] = useState(null)
@@ -58,7 +60,15 @@ export default function OnboardingPage() {
       const abiertos = datos.horarioSemanal.filter((d) => d.abierto)
       return abiertos.length > 0 && abiertos.every((d) => d.apertura < d.cierre)
     }
-    if (paso === 3) return datos.telefono && datos.email && datos.responsable && datos.password && datos.password.length >= 6
+    if (paso === 3)
+      return (
+        datos.telefono &&
+        datos.email &&
+        datos.responsable &&
+        datos.password &&
+        datos.password.length >= 6 &&
+        datos.contratoAceptado
+      )
     return false
   }
 
@@ -76,6 +86,7 @@ export default function OnboardingPage() {
     setEstado('creando')
     setErrorMsg(null)
     const { id, error } = await agregarNegocio({
+      terminosVersion: TERMINOS_VERSION,
       nombre: datos.nombre,
       categoria: datos.categoria,
       descripcion: datos.descripcion,
@@ -501,6 +512,23 @@ function PasoContacto({ datos, actualizar }) {
         <p className="text-xs text-zinc-400 -mt-2">
           Con este email y contraseña vas a entrar al panel de tu negocio en NearUs.
         </p>
+
+        <label className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition">
+          <input
+            type="checkbox"
+            checked={datos.contratoAceptado}
+            onChange={(e) => actualizar('contratoAceptado', e.target.checked)}
+            className="mt-0.5 w-4 h-4 accent-marca-500 shrink-0"
+          />
+          <span className="text-sm text-zinc-200 leading-relaxed">
+            Acepto el{' '}
+            <Link href="/terminos" target="_blank" className="text-marca-400 hover:underline font-medium">
+              contrato de prestación de servicios
+            </Link>{' '}
+            de NearUs, incluida la comisión del {Math.round(COMISION_NEARUS * 100)}% sobre los cobros
+            hechos dentro del app. Las reservas que el cliente paga en el local no pagan comisión.
+          </span>
+        </label>
       </div>
     </div>
   )
