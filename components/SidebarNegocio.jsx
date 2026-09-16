@@ -29,12 +29,21 @@ export default function SidebarNegocio() {
   const [abierto, setAbierto] = useState(false)
   const negocioId = useSesion((s) => s.negocioId)
   const modoDemo = useSesion((s) => s.modoDemo)
+  const gestionAdmin = useSesion((s) => s.gestionAdmin)
   const cerrarSesion = useSesion((s) => s.cerrarSesion)
+  const salirDeGestion = useSesion((s) => s.salirDeGestion)
   const negocios = useNegocios()
   const negocio = negocios.find((n) => n.id === negocioId)
   const seccionActual = SECCIONES.find((s) => pathname?.startsWith(s.href))
 
   const salir = async () => {
+    // Si es un admin gestionando, salir NO puede cerrar su sesión de admin:
+    // sólo suelta el negocio y vuelve al panel de administración.
+    if (gestionAdmin) {
+      await salirDeGestion()
+      router.replace('/admin/negocios')
+      return
+    }
     await cerrarSesion()
     router.replace('/login')
   }
@@ -125,11 +134,15 @@ export default function SidebarNegocio() {
               <div className="text-[10px] uppercase tracking-wider text-marca-500 font-bold">
                 Negocio
               </div>
-              {modoDemo && (
+              {gestionAdmin ? (
+                <span className="text-[9px] uppercase tracking-wider font-bold bg-marca-500 text-white px-1.5 py-0.5 rounded-full">
+                  Admin
+                </span>
+              ) : modoDemo ? (
                 <span className="text-[9px] uppercase tracking-wider font-bold bg-amber-400 text-amber-900 px-1.5 py-0.5 rounded-full">
                   Demo
                 </span>
-              )}
+              ) : null}
             </div>
             <div className="mt-0.5 font-bold text-sm">{negocio?.nombre}</div>
             <div className="mt-1 text-xs text-zinc-300">{negocio?.barrio} · Cuenca</div>
@@ -188,10 +201,14 @@ export default function SidebarNegocio() {
             <LogOut className="w-5 h-5 text-zinc-400" />
             <div className="flex-1 min-w-0 text-left">
               <div className="font-bold text-sm text-white">
-                {modoDemo ? 'Salir del demo' : 'Cerrar sesión'}
+                {gestionAdmin ? 'Volver a administración' : modoDemo ? 'Salir del demo' : 'Cerrar sesión'}
               </div>
               <div className="text-[11px] text-zinc-400">
-                {modoDemo ? 'Cambiar de negocio o entrar real' : 'Volver al login'}
+                {gestionAdmin
+                  ? 'Seguís logueado como admin'
+                  : modoDemo
+                  ? 'Cambiar de negocio o entrar real'
+                  : 'Volver al login'}
               </div>
             </div>
           </button>

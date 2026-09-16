@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import { TrendingUp, Users, Calendar, DollarSign, Star, Clock, Wallet, ArrowDownToLine, Info } from 'lucide-react'
 import { useReservasDemo, obtenerServicioDemo, obtenerEmpleadoDemo } from '@/lib/data/demo-negocio'
 import { useSesion } from '@/lib/store-sesion'
-import { formatoUSD } from '@/lib/utils'
+import { formatoUSD, COMISION_NEARUS } from '@/lib/utils'
 
 const PERIODOS = [
   { id: '7d', label: 'Últimos 7 días' },
@@ -11,9 +11,7 @@ const PERIODOS = [
   { id: '90d', label: 'Últimos 90 días' }
 ]
 
-// Comisión que NearUs descontará de cada servicio cobrado por la plataforma.
-// 10% — cambiar acá si cambia.
-const COMISION_NEARUS = 0.10
+// COMISION_NEARUS vive en lib/utils.js (un solo lugar para toda la app).
 
 export default function ReportesPage() {
   const negocioId = useSesion((s) => s.negocioId)

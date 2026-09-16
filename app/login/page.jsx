@@ -1,12 +1,9 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Mail, Lock, AlertCircle, Sparkles, Search, X, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Mail, Lock, AlertCircle } from 'lucide-react'
 import { useSesion } from '@/lib/store-sesion'
-import { useNegocios } from '@/lib/data/negocios'
-import { CATEGORIAS } from '@/lib/data/categorias'
-import { logoPlaceholder } from '@/lib/utils'
 import Logo from '@/components/Logo'
 
 export default function LoginPage() {
@@ -16,7 +13,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [cargando, setCargando] = useState(false)
-  const [modoDemoAbierto, setModoDemoAbierto] = useState(false)
 
   const enviar = async (e) => {
     e.preventDefault()
@@ -109,117 +105,8 @@ export default function LoginPage() {
             </div>
           </form>
 
-          <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs text-zinc-400 uppercase tracking-wider font-medium">o</span>
-            <div className="flex-1 h-px bg-white/10" />
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setModoDemoAbierto(true)}
-            className="w-full bg-amber-500/15 hover:bg-amber-200 text-amber-800 border border-amber-200 rounded-2xl py-3.5 px-4 font-semibold flex items-center justify-center gap-2 transition"
-          >
-            <Sparkles className="w-4 h-4 fill-amber-500" />
-            Entrar en modo demo
-          </button>
-          <p className="text-center text-xs text-zinc-400 mt-2">
-            Elige cualquier negocio para ver el panel sin necesidad de cuenta.
-          </p>
         </div>
       </div>
-
-      {modoDemoAbierto && <SelectorDemo onCerrar={() => setModoDemoAbierto(false)} />}
     </main>
-  )
-}
-
-function SelectorDemo({ onCerrar }) {
-  const router = useRouter()
-  const negocios = useNegocios()
-  const setModoDemo = useSesion((s) => s.setModoDemo)
-  const [busqueda, setBusqueda] = useState('')
-
-  const filtrados = useMemo(() => {
-    if (!busqueda) return negocios
-    const q = busqueda.toLowerCase()
-    return negocios.filter(
-      (n) => n.nombre.toLowerCase().includes(q) || (n.barrio || '').toLowerCase().includes(q)
-    )
-  }, [busqueda, negocios])
-
-  const elegir = (id) => {
-    setModoDemo(id)
-    router.replace('/negocio/inicio')
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-3" onClick={onCerrar}>
-      <div
-        className="bg-nocturno-500 w-full max-w-md rounded-3xl shadow-flotante overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-5 border-b border-white/10 flex items-start justify-between gap-3">
-          <div>
-            <div className="text-[10px] uppercase tracking-wider text-amber-600 font-bold flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 fill-amber-500" /> Modo demo
-            </div>
-            <h2 className="mt-1 text-xl font-semibold text-white">Elige el negocio</h2>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Entrarás al panel como si fueras el dueño de ese negocio.
-            </p>
-          </div>
-          <button onClick={onCerrar} className="w-8 h-8 grid place-items-center rounded-xl hover:bg-white/10 text-zinc-400 shrink-0">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="p-3 border-b border-white/10">
-          <div className="bg-white/5 rounded-xl px-3 py-2 flex items-center gap-2">
-            <Search className="w-4 h-4 text-zinc-400" />
-            <input
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar por nombre o barrio…"
-              className="flex-1 bg-transparent text-sm placeholder:text-zinc-400 focus:outline-none"
-            />
-          </div>
-        </div>
-
-        <div className="max-h-[60vh] overflow-y-auto p-2">
-          {filtrados.length === 0 && (
-            <p className="text-center text-sm text-zinc-400 py-10">Ningún negocio coincide.</p>
-          )}
-          {filtrados.map((n) => {
-            const cat = CATEGORIAS.find((c) => c.id === n.categoria)
-            return (
-              <button
-                key={n.id}
-                onClick={() => elegir(n.id)}
-                className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 text-left transition"
-              >
-                <div
-                  className="w-12 h-12 rounded-xl overflow-hidden shrink-0"
-                  style={{ backgroundColor: cat?.color || '#2BACE2' }}
-                >
-                  <img
-                    src={n.logo || logoPlaceholder(n.nombre, cat?.color)}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm text-white truncate">{n.nombre}</div>
-                  <div className="text-xs text-zinc-400 truncate">
-                    {cat?.nombre} · {n.barrio}
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
-              </button>
-            )
-          })}
-        </div>
-      </div>
-    </div>
   )
 }
