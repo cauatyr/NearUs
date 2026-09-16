@@ -12,12 +12,13 @@ import { useDatosStore } from '@/lib/store-datos'
 import { distanciaKm } from '@/lib/utils'
 import TarjetaNegocio from '@/components/TarjetaNegocio'
 import FlujoUbicacion from '@/components/FlujoUbicacion'
+import AvisoUbicacionExacta from '@/components/AvisoUbicacionExacta'
 
 export default function InicioPage() {
   const router = useRouter()
   const [q, setQ] = useState('')
   const NEGOCIOS = useNegocios()
-  const { posicion, ciudad, reabrirFlujo } = useUbicacion()
+  const { posicion, ciudad, gpsConcedido, reabrirFlujo } = useUbicacion()
   const cliente = useCliente((s) => s.cliente)
   const todasReservas = useDatosStore((s) => s.reservas)
 
@@ -95,6 +96,8 @@ export default function InicioPage() {
             />
           </div>
         </form>
+
+        <AvisoUbicacionExacta className="mt-3" />
       </div>
 
       {/* Categorías */}
@@ -140,7 +143,7 @@ export default function InicioPage() {
           <div className="flex gap-3 overflow-x-auto no-scrollbar px-5 pb-1">
             {disponiblesAhora.map((n) => (
               <div key={n.id} className="w-60 shrink-0">
-                <TarjetaNegocio negocio={n} usuario={posicion} />
+                <TarjetaNegocio negocio={n} usuario={gpsConcedido ? posicion : null} />
               </div>
             ))}
           </div>
@@ -149,10 +152,10 @@ export default function InicioPage() {
 
       {/* Cerca de ti */}
       {cercaDeTi.length > 0 && (
-        <Seccion titulo="Cerca de ti" icono={MapPin} verHref="/explorar">
+        <Seccion titulo={gpsConcedido ? 'Cerca de ti' : `En ${ciudadActiva.nombre}`} icono={MapPin} verHref="/explorar">
           <div className="px-5 space-y-3">
             {cercaDeTi.map((n) => (
-              <TarjetaNegocio key={n.id} negocio={n} usuario={posicion} compacta />
+              <TarjetaNegocio key={n.id} negocio={n} usuario={gpsConcedido ? posicion : null} compacta />
             ))}
           </div>
         </Seccion>

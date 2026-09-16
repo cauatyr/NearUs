@@ -4,27 +4,51 @@ import { MapPin, Navigation, ChevronRight, Globe2, Loader2 } from 'lucide-react'
 import { useUbicacion } from '@/lib/store'
 import { ciudadesActivas } from '@/lib/data/ciudades'
 
+// Bandera de sesión: ya le preguntamos por el GPS en esta visita. Evita
+// repetir el cartel en cada navegación, pero al abrir el app de nuevo vuelve a
+// preguntar mientras no tengamos su ubicación exacta.
+const SS_PREGUNTADO = 'nearus.gps-preguntado'
+
+function yaPreguntamosEstaSesion() {
+  try {
+    return sessionStorage.getItem(SS_PREGUNTADO) === '1'
+  } catch {
+    return false
+  }
+}
+
+function marcarPreguntado() {
+  try {
+    sessionStorage.setItem(SS_PREGUNTADO, '1')
+  } catch {}
+}
+
 // Overlay que resuelve la ubicación del usuario al entrar:
 //   1) Soft-prompt amable ("¿permitir ubicación?")
 //   2) Permiso real del navegador
 //   3) Si lo niega / está fuera de cobertura → selector de ciudad manual
-// Cierra solo cuando hay una ciudad activa (estado 'concedida').
+//
+// La ciudad se recuerda entre visitas, pero la POSICIÓN exacta no: cada vez que
+// el app abre sin GPS real, o se refresca en silencio (si el permiso ya está
+// dado) o se vuelve a pedir. Sin eso, todas las distancias y el Near you salían
+// medidos desde el centro de la ciudad en vez de desde la persona.
 export default function FlujoUbicacion() {
-  const { estado, ciudad, pedirUbicacion, elegirCiudad } = useUbicacion()
+  const { estado, ciudad, gpsConcedido, reabierto, pedirUbicacion, elegirCiudad } = useUbicacion()
   const [montado, setMontado] = useState(false)
   const [vista, setVista] = useState('auto') // 'auto' | 'selector'
+  const [pospuesto, setPospuesto] = useState(false)
 
   useEffect(() => {
     setMontado(true)
   }, [])
 
-  // Al montar por primera vez: si ya sabemos el estado del permiso, lo usamos
-  // sin molestar. 'granted' o 'denied' → resolvemos en silencio (no abre prompt
-  // nativo). Solo 'prompt'/desconocido deja el soft-prompt visible.
+  // Al montar: miramos el permiso para no abrir el prompt nativo de la nada.
+  //   granted → refrescamos la posición en silencio (aunque ya haya ciudad)
+  //   denied  → sin ciudad, lo resolvemos a 'denegada' (sale el selector)
+  //   prompt  → dejamos que se vea el soft-prompt
   useEffect(() => {
     if (!montado) return
-    if (useUbicacion.getState().estado !== 'idle') return
-    if (useUbicacion.getState().ciudad) return
+    if (useUbicacion.getState().gpsConcedido) return
 
     let cancelado = false
     const permisos = typeof navigator !== 'undefined' ? navigator.permissions : null
@@ -33,8 +57,10 @@ export default function FlujoUbicacion() {
         .query({ name: 'geolocation' })
         .then((res) => {
           if (cancelado) return
-          if (res.state === 'granted' || res.state === 'denied') {
-            pedirUbicacion(true) // silencioso: granted resuelve ciudad, denied → 'denegada'
+          if (res.state === 'granted') {
+            pedirUbicacion(true)
+          } else if (res.state === 'denied' && !useUbicacion.getState().ciudad) {
+            pedirUbicacion(true)
           }
         })
         .catch(() => {})
@@ -45,59 +71,102 @@ export default function FlujoUbicacion() {
   }, [montado, pedirUbicacion])
 
   if (!montado) return null
-  if (estado === 'concedida') return null // ya hay ciudad → nada que mostrar
 
-  const mostrarSelector =
-    vista === 'selector' ||
-    estado === 'denegada' ||
-    estado === 'no-soportada' ||
-    estado === 'fuera-cobertura' ||
-    (estado === 'idle' && !!ciudad) // re-apertura para cambiar de ciudad
+  const hayCiudad = !!ciudad
+  // El usuario tocó el chip de ciudad para cambiarla: eso manda sobre todo lo
+  // demás, incluso si ya tenemos su GPS.
+  const cambiandoCiudad = reabierto || vista === 'selector'
+
+  let contenido = null
+
+  if (estado === 'pidiendo') {
+    contenido = <Pidiendo />
+  } else if (cambiandoCiudad) {
+    contenido = (
+      <SelectorCiudad
+        motivo={estado}
+        onElegir={(c) => {
+          elegirCiudad(c)
+          setVista('auto')
+        }}
+      />
+    )
+  } else if (gpsConcedido) {
+    return null // ya sabemos dónde está: nada que preguntar
+  } else if (!hayCiudad) {
+    // Primera vez (o negó y todavía no eligió ciudad): flujo completo.
+    contenido =
+      estado === 'denegada' || estado === 'no-soportada' || estado === 'fuera-cobertura' ? (
+        <SelectorCiudad motivo={estado} onElegir={(c) => elegirCiudad(c)} />
+      ) : (
+        <SoftPrompt onPermitir={() => pedirUbicacion(false)} onManual={() => setVista('selector')} />
+      )
+  } else {
+    // Tiene ciudad pero no ubicación exacta. Preguntamos UNA vez por sesión, y
+    // nunca si el navegador ya nos dijo que no. Para el resto queda el aviso
+    // AvisoUbicacionExacta en las pantallas que dependen de la distancia.
+    if (pospuesto || estado === 'denegada' || estado === 'no-soportada') return null
+    if (yaPreguntamosEstaSesion()) return null
+    contenido = (
+      <SoftPrompt
+        conCiudad={ciudad}
+        onPermitir={() => {
+          marcarPreguntado()
+          pedirUbicacion(false)
+        }}
+        onManual={() => {
+          marcarPreguntado()
+          setPospuesto(true)
+        }}
+      />
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="w-full max-w-sm bg-nocturno-500 rounded-3xl shadow-flotante overflow-hidden">
-        {estado === 'pidiendo' ? (
-          <Pidiendo />
-        ) : mostrarSelector ? (
-          <SelectorCiudad
-            motivo={estado}
-            onElegir={(c) => elegirCiudad(c)}
-          />
-        ) : (
-          <SoftPrompt
-            onPermitir={() => pedirUbicacion(false)}
-            onManual={() => setVista('selector')}
-          />
-        )}
+        {contenido}
       </div>
     </div>
   )
 }
 
-function SoftPrompt({ onPermitir, onManual }) {
+// conCiudad = ya sabe en qué ciudad está; lo que falta es el punto exacto.
+function SoftPrompt({ onPermitir, onManual, conCiudad }) {
   return (
     <div className="p-6 text-center">
       <div className="w-16 h-16 mx-auto rounded-2xl bg-marca-500/10 grid place-items-center text-marca-500">
         <Navigation className="w-8 h-8" />
       </div>
-      <h2 className="mt-4 text-xl font-bold text-white">¿Dónde te mostramos?</h2>
+      <h2 className="mt-4 text-xl font-bold text-white">
+        {conCiudad ? '¿Dónde estás exactamente?' : '¿Dónde te mostramos?'}
+      </h2>
       <p className="mt-2 text-sm text-zinc-300 leading-relaxed">
-        NearUs usa tu ubicación para abrir el mapa en tu ciudad y mostrarte los
-        negocios cerca de ti. No la compartimos con nadie.
+        {conCiudad ? (
+          <>
+            Estás explorando {conCiudad.nombre}, pero sin tu ubicación exacta las distancias
+            salen medidas desde el centro de la ciudad y Near you no sabe de dónde partir.
+          </>
+        ) : (
+          <>
+            NearUs usa tu ubicación para abrir el mapa en tu ciudad y mostrarte los
+            negocios cerca de ti. No la compartimos con nadie.
+          </>
+        )}
       </p>
 
       <button
         onClick={onPermitir}
         className="mt-5 w-full bg-marca-500 hover:bg-marca-600 text-white font-bold py-3.5 rounded-2xl transition flex items-center justify-center gap-2 shadow-marca"
       >
-        <MapPin className="w-5 h-5" /> Permitir mi ubicación
+        <MapPin className="w-5 h-5" />
+        {conCiudad ? 'Usar mi ubicación exacta' : 'Permitir mi ubicación'}
       </button>
       <button
         onClick={onManual}
         className="mt-2 w-full text-zinc-300 hover:text-white font-medium py-3 rounded-2xl transition text-sm"
       >
-        Elegir mi ciudad a mano
+        {conCiudad ? 'Ahora no' : 'Elegir mi ciudad a mano'}
       </button>
     </div>
   )

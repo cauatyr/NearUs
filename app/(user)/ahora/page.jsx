@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import {
-  Zap, MapPin, Clock, Star, ArrowRight, Check, X,
+  Zap, MapPin, Clock, Star, ArrowRight, Check, X, Navigation, Loader2,
   Scissors, BadgeAlert, Hand, Sparkles, Flower2, Wand2, Palette, HandHelping
 } from 'lucide-react'
 import { useNegocios, serviciosDeNegocio } from '@/lib/data/negocios'
@@ -20,18 +20,25 @@ const ICONOS = { Scissors, BadgeAlert, Hand, Sparkles, Flower2, Wand2, Palette, 
 
 export default function AhoraPage() {
   const router = useRouter()
-  const { posicion } = useUbicacion()
+  const { posicion, gpsConcedido, pedirUbicacion } = useUbicacion()
   const { crearReserva } = useReservas()
   const NEGOCIOS = useNegocios()
   const [categoria, setCategoria] = useState('barberia')
   const [estado, setEstado] = useState('inicial') // inicial | buscando | viajando | encontrado
   const [negocioElegido, setNegocioElegido] = useState(null)
+  const [pidiendoGps, setPidiendoGps] = useState(false)
 
   const disponibles = useMemo(() => {
     return NEGOCIOS.filter((n) => n.aceptaAhora && n.categoria === categoria)
       .map((n) => ({ ...n, _dist: distanciaKm(posicion.lat, posicion.lng, n.lat, n.lng) }))
       .sort((a, b) => a._dist - b._dist)
   }, [NEGOCIOS, categoria, posicion])
+
+  const activarUbicacion = async () => {
+    setPidiendoGps(true)
+    await pedirUbicacion(false)
+    setPidiendoGps(false)
+  }
 
   const buscar = () => {
     setEstado('buscando')
@@ -151,14 +158,40 @@ export default function AhoraPage() {
           className="fixed bottom-16 left-0 right-0 z-20 max-w-md mx-auto px-4 pt-3 pb-3 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A] to-transparent"
           style={{ paddingBottom: 'calc(0.75rem + var(--safe-bottom))' }}
         >
-          <button
-            onClick={buscar}
-            disabled={disponibles.length === 0}
-            className="w-full bg-marca-500 hover:bg-marca-600 active:scale-[0.98] disabled:bg-white/10 disabled:text-zinc-500 text-white font-bold py-4 rounded-full flex items-center justify-center gap-2 transition shadow-marca"
-          >
-            <Zap className="w-5 h-5 fill-white" />
-            Buscar atención inmediata
-          </button>
+          {gpsConcedido ? (
+            <button
+              onClick={buscar}
+              disabled={disponibles.length === 0}
+              className="w-full bg-marca-500 hover:bg-marca-600 active:scale-[0.98] disabled:bg-white/10 disabled:text-zinc-500 text-white font-bold py-4 rounded-full flex items-center justify-center gap-2 transition shadow-marca"
+            >
+              <Zap className="w-5 h-5 fill-white" />
+              Buscar atención inmediata
+            </button>
+          ) : (
+            <>
+              {/* Near you sale de DONDE ESTÁS: sin ubicación real, el viaje
+                  arrancaría del centro de la ciudad y el "más cercano" sería
+                  mentira. Por eso acá se pide antes de buscar. */}
+              <button
+                onClick={activarUbicacion}
+                disabled={pidiendoGps}
+                className="w-full bg-marca-500 hover:bg-marca-600 active:scale-[0.98] disabled:opacity-70 text-white font-bold py-4 rounded-full flex items-center justify-center gap-2 transition shadow-marca"
+              >
+                {pidiendoGps ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" /> Buscando tu ubicación…
+                  </>
+                ) : (
+                  <>
+                    <Navigation className="w-5 h-5" /> Activar mi ubicación
+                  </>
+                )}
+              </button>
+              <p className="mt-2 text-center text-xs text-zinc-400">
+                Near you necesita saber dónde estás para mandarte al local más cercano.
+              </p>
+            </>
+          )}
         </div>
       )}
 

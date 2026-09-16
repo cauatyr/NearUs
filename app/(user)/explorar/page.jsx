@@ -16,6 +16,7 @@ import { CIUDAD_DEFECTO, detectarCiudad, ciudadMasCercana } from '@/lib/data/ciu
 import { useUbicacion, useReservas } from '@/lib/store'
 import { distanciaKm, formatoDistancia } from '@/lib/utils'
 import FlujoUbicacion from '@/components/FlujoUbicacion'
+import AvisoUbicacionExacta from '@/components/AvisoUbicacionExacta'
 
 const MapView = dynamic(() => import('@/components/MapView'), {
   ssr: false,
@@ -147,6 +148,8 @@ export default function ExplorarPage() {
           </div>
         </div>
 
+        <AvisoUbicacionExacta className="pointer-events-auto shadow-flotante" />
+
         <div className="bg-nocturno-500 rounded-2xl shadow-flotante p-2 flex items-center gap-2 pointer-events-auto border border-white/10">
           <Search className="w-4 h-4 text-zinc-400 ml-2" />
           <input
@@ -241,7 +244,7 @@ export default function ExplorarPage() {
           className="absolute inset-0 z-10 bg-white/5 overflow-y-auto pt-44"
           style={{ paddingBottom: 'calc(5rem + var(--safe-bottom))' }}
         >
-          <ListaCompleta negocios={negociosFiltrados} usuario={posicion} />
+          <ListaCompleta negocios={negociosFiltrados} usuario={gpsConcedido ? posicion : null} />
         </div>
       )}
     </div>
